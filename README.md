@@ -1,123 +1,88 @@
-
-## V1 release status — M11 complete
-
-CIP Intelligence is now **portfolio-complete V1**. The final seeded facility-scale validation campaign exercised **2,240 synthetic CIP cycles across four simulated HTST circuits** (240 baseline + 2,000 evaluation), and the full application regression suite passes **124/124 tests**. See `docs/milestone-11-validation-release.md` for the exact results and limitations.
-
-**Important:** these are synthetic known-answer regression results, not real-plant accuracy claims. V1 remains read-only, does not prove microbiological cleanliness, does not approve sanitation release, and cannot modify PLC/HMI recipes or commands. The next step is an offline anonymized real-plant validation pilot.
-
-Release documents: `RELEASE_NOTES_V1.md`, `docs/validation-methodology.md`, `docs/portfolio-case-study.md`, and `docs/real-plant-pilot-plan.md`.
-
 # CIP Intelligence
 
-CIP Intelligence is a read-only cleaning decision-intelligence platform for dairy and food plants.
+**Evidence-driven Cleaning-in-Place analytics for dairy and food manufacturing.**
 
-It is designed to ingest plant data, validate data quality, reconstruct CIP cycles, verify execution against plant-approved cleaning specifications, learn normal equipment behavior, correlate production/QA/maintenance context, and surface evidence-backed diagnostic and optimization opportunities.
+[Live Demo](https://cip-intelligence.onrender.com/app/) · [Portfolio Case Study](docs/portfolio-case-study.md) · [Architecture](ARCHITECTURE.md) · [Validation Methodology](docs/validation-methodology.md) · [V1 Release Notes](RELEASE_NOTES_V1.md)
+
+![CIP Intelligence plant overview](docs/screenshots/plant-overview.png)
+
+## What problem does it solve?
+
+CIP systems generate large amounts of process data, but determining whether a cleaning cycle actually followed the plant-approved procedure, whether the underlying measurements are trustworthy, what unusual behavior means, and where resources may be safely reduced can require fragmented manual investigation.
+
+CIP Intelligence is a **read-only decision-intelligence layer** that turns those process records into traceable engineering evidence. It can ingest plant data, validate data quality, reconstruct CIP cycles, verify execution against plant-approved cleaning specifications, learn normal equipment behavior, correlate production/QA/maintenance context, surface diagnostic evidence, quantify resource use, and identify controlled optimization opportunities.
+
+It does **not** control the plant. PLC/HMI systems remain responsible for CIP control and interlocks.
+
+## At a glance
+
+`Plant data → L0 Data Trust → L1 Reconstruction → L2 Validated Compliance → L3 Behavioral Intelligence → L4 Production Context → L5 Diagnostics → L6 Controlled Optimization`
+
+| Layer | Question CIP Intelligence answers |
+| --- | --- |
+| **L0 — Data Trust** | Can the sensor and acquisition evidence be trusted? |
+| **L1 — CIP Reconstruction** | What cleaning cycle and phases actually occurred? |
+| **L2 — Validated Process Compliance** | Did available evidence show the plant-approved CIP procedure was executed as specified? |
+| **L3 — Behavioral Intelligence** | Was the cycle unusual for this asset and recipe revision even if it remained compliant? |
+| **L4 — Production Context** | What production conditions preceded the CIP, and is the response contextually unusual? |
+| **L5 — Outcome & Diagnostic Intelligence** | What do process, QA, maintenance, and operator evidence collectively suggest? |
+| **L6 — Controlled Optimization Intelligence** | Is there evidence for a controlled engineering/QA trial that could reduce excess time or resources? |
+
+## V1 proof point
+
+**2,240 synthetic CIP cycles · 4 simulated HTST circuits · 124/124 automated regression tests passing.**
+
+These are **synthetic known-answer regression results, not real-plant accuracy claims**. V1 is intended for engineering demonstration and offline validation. The next validation step is an anonymized historical real-plant pilot.
+
+## Safety boundary
+
+CIP Intelligence can determine whether available process evidence indicates that a **plant-defined/validated CIP process was executed as specified**. Process measurements alone do not prove microbiological cleanliness or authorize sanitation release.
+
+V1 is deliberately read-only:
+
+- no PLC/HMI command path
+- no automatic recipe changes
+- no automatic sanitation release
+- no replacement for plant engineering, QA, validation, or formal change control
+- optimization outputs remain controlled-validation candidates requiring human review
 
 ## Product rule
 
 **Evidence before AI. Reliability before cleverness.**
 
-CIP Intelligence never controls a plant in the initial product architecture. PLC/HMI systems remain responsible for control. CIP Intelligence observes approved data sources through files, historians, databases, APIs, or read-only industrial connectors.
+The platform is designed around deterministic evidence and explicit lineage first. Statistical or learned behavior is used to add context, not to override validated plant requirements.
 
-## Intelligence ladder
+## Product UI
 
-- L0 — Data Trust
-- L1 — CIP Reconstruction
-- L2 — Validated Process Compliance
-- L3 — Behavioral Intelligence
-- L4 — Production Context Intelligence
-- L5 — Outcome & Diagnostic Intelligence
-- L6 — Controlled Optimization Intelligence
-- LX — Research-only capabilities until validated
+![CIP Intelligence cycle explorer](docs/screenshots/cycle-explorer.png)
 
-## Repository status
+The browser UI includes **Plant Overview, Cycle Explorer, Investigations, Controlled Optimization, and Data Health** screens. A simulator-only presentation API supplies the public portfolio demo so the application can be explored without proprietary plant data.
 
-Architecture v1 is frozen and **Milestones 1A–9 — Universal Ingestion, Automated Acquisition, CIP Reconstruction, Validated Compliance, Behavioral Intelligence, Resource & Economics Intelligence, Production Context Intelligence, Outcome/Diagnostic Intelligence, Controlled Optimization Intelligence, and Product UI** are implemented as working checkpoints. The repository includes:
+## Core capabilities
 
-- universal CIP semantic model
-- initial database schema with physical-tag identity and redundant-sensor support
-- read-only integration architecture
-- reliability contract
-- diagnostic library seed
-- deterministic simulator
-- deterministic first-pass analysis engine
-- conservative CSV inspection and semantic-mapping suggestions
-- explicit mapping profiles with engineering units and plant timezone
-- UTC/unit normalization with source lineage
-- immutable raw-file/checksum storage for local development
-- duplicate-ingestion idempotency
-- initial ingestion data-quality checks
-- automated regression tests
-- read-only watched-folder acquisition
-- durable acquisition sources/jobs with retry lineage
-- polling worker for zero-touch export ingestion
-- normalization-context fingerprinting for safe idempotency
-- industrial adapter interface for future historian/database/API/OPC UA connectors
-- automatic asset-specific CIP cycle reconstruction
-- explicit PLC/sequence-tag phase reconstruction with canonical phase aliases
-- conservative sensor-only phase inference with evidence-grade confidence
-- deterministic cycle IDs and immutable/versioned reconstruction artifacts
-- per-phase duration and process-signal metrics
-- conservative phase-glitch repair, gap/reset cycle splitting, and UNKNOWN behavior when evidence is inadequate
-- versioned plant-approved recipe/validation model with immutable revisions
-- deterministic L2 compliance engine with `PASS` / `FAIL` / `NOT_EVALUABLE`
-- simultaneous validated-exposure calculations across temperature, flow, chemistry, etc.
-- sustained endpoint checks that reject transient threshold crossings
-- missing-evidence logic that distinguishes process failure from inability to prove compliance
-- context-aware sensor-flatline blocking, including safe stable-endpoint handling
-- compliance lineage hashes for normalized data, reconstruction, and recipe revision
-- immutable/idempotent compliance analysis artifacts
-- L3 asset- and recipe-revision-specific behavioral baselines
-- compliant-history eligibility gates so process deviations and data-review cycles cannot train "normal" behavior
-- gross robust-outlier screening to reduce baseline poisoning
-- median/MAD/IQR-based robust feature distributions with engineering scale floors
-- scalar cycle fingerprints for duration, temperature, flow, conductivity, and pressure behavior
-- time-normalized phase profiles that can detect sustained shape changes hidden by averages
-- explicit `NORMAL` / `UNUSUAL` / `HIGHLY_UNUSUAL` / `NOT_EVALUABLE` behavioral outcomes
-- baseline maturity, lineage, immutable revisions, and self-comparison leakage protection
-- strict L2/L3 separation: behavioral anomalies never override deterministic validated compliance
+- universal CIP semantic model with physical-tag identity and redundant-sensor support
+- conservative CSV inspection, explicit semantic mapping, unit normalization, plant timezone handling, and source lineage
+- read-only watched-folder acquisition plus adapter interfaces for future historian/database/API/OPC UA connectors
+- automatic asset-specific CIP cycle reconstruction from explicit sequence evidence or conservative sensor inference
+- deterministic `PASS` / `FAIL` / `NOT_EVALUABLE` L2 compliance against versioned plant-approved specifications
+- simultaneous exposure calculations across temperature, flow, chemistry, and other configured requirements
+- data-quality gating that distinguishes a process deviation from an inability to prove compliance
+- asset- and recipe-specific robust behavioral baselines with `NORMAL` / `UNUSUAL` / `HIGHLY_UNUSUAL` outcomes
+- dedicated utility/resource accounting separated from recirculating process flow
+- plant-configured economics with no built-in industry cost assumptions
+- production-context reconstruction and comparable-history analysis without inventing a universal soil-load score
+- QA, maintenance, operator-observation, and diagnostic evidence stores with explicit separation of hypotheses from confirmed conditions
+- controlled final-rinse optimization candidates gated by compliance, endpoint evidence, historical behavior, QA outcomes, and diagnostic status
+- immutable/versioned analysis artifacts and lineage across the intelligence ladder
 
-- dedicated utility/resource semantic concepts kept separate from recirculating process flow
-- meter-coverage-aware integration for fresh water, wastewater, electricity, thermal energy, and chemical mass
-- `MEASURED` / `NOT_EVALUABLE` resource accounting that refuses long unobserved gaps
-- immutable plant-configured cost profiles with no built-in fake industry rates
-- asset + recipe-revision historical resource references from eligible L2-compliant cycles
-- optimization candidates for excess resource use and excess CIP time versus historical median
-- production-capacity value applied only to excess cleaning time, never to the whole necessary CIP
-- annualized opportunity scenarios only when cycle frequency is explicitly configured
-- L2 gate that suppresses resource-reduction recommendations on noncompliant/data-review cycles while retaining measurable resource accounting
-- L4 immutable production-run evidence model with MES/historian/database/API/CSV/manual/simulator source lineage
-- automatic reconstruction of the contiguous uncleaned production campaign preceding each CIP
-- campaign features for production duration, volume, composition, product changes, idle time, shutdowns, pressure-drop change, and normalized heat-transfer decline where evidenced
-- explicit refusal to convert those production variables into a fictional universal soil-load score
-- asset + recipe-revision L4 baselines trained only from contextual L2-compliant explicit cycles
-- transparent robust nearest-context matching with product-family constraints and minimum-comparable-history requirements
-- `CONTEXTUALLY_TYPICAL` / `CONTEXTUALLY_UNUSUAL` / `INSUFFICIENT_COMPARABLES` / `NOT_EVALUABLE` outcomes
-- L4 self-comparison and historical look-ahead leakage protection
-- L5 immutable QA, maintenance, operator-observation, and resolved diagnostic-case evidence stores
-- automatic asset/time-window evidence linking without silently attaching unrelated records
-- explicit separation of post-CIP verification outcome from root-cause diagnosis
-- hydraulic diagnostic signatures that require joint plant-specific L3 flow/pressure evidence rather than low flow alone
-- instrumentation-quality gating that blocks root-cause inference when a required signal is unreliable
-- physical/CMMS confirmations that remain distinct from inferred hypotheses
-- historical positive **and negative** confirmation learning with minimum-evidence/precision gates before confidence is upgraded
-- explainable evidence graph separating detections, hypotheses, and confirmed conditions
-- L6 final-rinse tail optimization discovery gated by L2 compliance, explicit reconstruction, endpoint evidence, historical behavior, QA outcomes, and diagnostic status
-- conservative controlled-trial envelopes that never replace the plant-approved endpoint condition
-- explicit engineering/QA/protocol approval references for controlled-trial assessment
-- trial assessment that can support human review but can never auto-accept a recipe change
-- immutable optimization candidates, human decision records, and controlled-validation assessments
-- industrial product UI with Plant Overview, Cycle Explorer, Investigations, Controlled Optimization, and Data Health screens
-- simulator-only presentation API for overview, signal time-series, and data-health fixtures
-- browser-rendered product screenshots under `docs/screenshots/`
-- 124 automated regression tests passing across ingestion through L6 controlled optimization intelligence, M9 UI contracts, M10 production hardening, and M11 release safeguards
+For the detailed engineering implementation, see [ARCHITECTURE.md](ARCHITECTURE.md) and the milestone documents under [`docs/`](docs/).
 
-## Run the demo API
+## Run locally
 
 ```bash
 cd services/api
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
@@ -127,68 +92,66 @@ Then open:
 - Product UI: `http://127.0.0.1:8000/app/`
 - API docs: `http://127.0.0.1:8000/docs`
 
-The M9 UI is deliberately served by the same FastAPI process so the checkpoint is runnable without a separate frontend build. See `docs/milestone-9-product-ui.md`.
+The UI is served by the same FastAPI process, so the project runs without a separate frontend build.
 
-### Try the ingestion demo
+## Explore the demo API
 
-Use `data/messy_historian_export.csv` with `config/messy_demo_mapping.json`. The API workflow is:
+### Ingestion
 
-1. `POST /v1/ingestion/inspect` to inspect a CSV and receive mapping suggestions.
-2. `POST /v1/mappings` to explicitly save an approved mapping.
-3. `POST /v1/ingestion/{profile_name}` to preserve and normalize the source data.
+Use `data/messy_historian_export.csv` with `config/messy_demo_mapping.json`:
 
-See `docs/milestone-1a-ingestion.md` for the ingestion reliability contract, `docs/milestone-1b-acquisition.md` for automated acquisition, `docs/milestone-2-reconstruction.md` for cycle/phase reconstruction, `docs/milestone-3-compliance.md` for deterministic validated compliance, `docs/milestone-4-behavioral-intelligence.md` for L3 historical behavior learning, and `docs/milestone-5-resource-economics.md` for resource/cost accounting, and `docs/milestone-6-production-context.md` for L4 production-context intelligence, and `docs/milestone-7-diagnostic-intelligence.md` for L5 outcome/diagnostic intelligence, and `docs/milestone-8-controlled-optimization.md` for L6 controlled optimization, and `docs/milestone-9-product-ui.md` for the plant-facing application interface.
+1. `POST /v1/ingestion/inspect` — inspect a CSV and receive mapping suggestions.
+2. `POST /v1/mappings` — explicitly save an approved mapping.
+3. `POST /v1/ingestion/{profile_name}` — preserve and normalize the source data.
 
+### CIP reconstruction
 
-### Try CIP reconstruction
+After normalized ingestion exists, call `POST /v1/reconstruction/ingestions/{ingestion_id}`. For the deterministic simulator, compare `GET /v1/demo/reconstruct/normal?mode=explicit` with `GET /v1/demo/reconstruct/normal?mode=inferred`. Inferred reconstruction is intentionally lower-confidence even when it finds the same known sequence.
 
-After a normalized ingestion exists, call `POST /v1/reconstruction/ingestions/{ingestion_id}`. For the built-in deterministic simulator, compare `GET /v1/demo/reconstruct/normal?mode=explicit` with `GET /v1/demo/reconstruct/normal?mode=inferred`. The inferred result is intentionally lower-confidence even when it reconstructs the same known sequence.
+### Validated compliance
 
-### Try validated compliance
+`config/example_htst_validated_recipe_v7.json` is a **simulation fixture, not a universal CIP recommendation**. Real deployments must load the plant's approved validation specification.
 
-The bundled `config/example_htst_validated_recipe_v7.json` is a **simulation fixture, not a universal CIP recommendation**. Real deployments must load the plant's approved validation specification.
+Try `GET /v1/demo/compliance/normal`, `.../low_temp`, `.../low_flow`, `.../sensor_freeze`, and `.../excessive_rinse`.
 
-For the deterministic simulator, try `GET /v1/demo/compliance/normal`, `.../low_temp`, `.../low_flow`, `.../sensor_freeze`, and `.../excessive_rinse`. To use a real normalized ingestion, save a recipe with `POST /v1/compliance/recipes`, reconstruct the ingestion, then call `POST /v1/compliance/ingestions/{ingestion_id}`.
+### Behavioral intelligence
 
+L3 requires an immutable baseline from historical cycles for the **same asset and recipe revision**. The default policy requires at least 20 eligible L2-compliant cycles and screens gross compliant outliers before freezing the baseline.
 
-### Try behavioral intelligence
+Try `GET /v1/demo/behavior/normal`, `.../compliant_low_flow`, `.../profile_shift`, `.../excessive_rinse`, `.../low_temp`, and `.../sensor_freeze`. A cycle may remain L2-compliant while L3 reports historically unusual behavior.
 
-L3 requires an immutable baseline built from historical cycles for the **same asset and recipe revision**. The default policy requires at least 20 eligible L2-compliant cycles and screens gross compliant outliers before freezing the baseline. Use `POST /v1/behavior/baselines` with `config/example_behavior_baseline_request.json` as a shape reference, then evaluate a new ingestion with `POST /v1/behavior/ingestions/{ingestion_id}`.
+### Resource & economics intelligence
 
-For the built-in simulator, try `GET /v1/demo/behavior/normal`, `.../compliant_low_flow`, `.../profile_shift`, `.../excessive_rinse`, `.../low_temp`, and `.../sensor_freeze`. The important distinction is that `compliant_low_flow`, `profile_shift`, and `excessive_rinse` can remain L2-compliant while L3 reports behavior that is historically unusual.
+Resource accounting uses **dedicated utility meters/signals**; return-flow circulation is never treated as fresh-water use. Plant-specific rates are stored separately, and bundled simulator rates are not industry benchmarks.
 
+Compare `GET /v1/demo/economics/normal` with `GET /v1/demo/economics/excessive_rinse`.
 
-### Try resource & economics intelligence
+### Production-context intelligence
 
-Resource accounting uses **dedicated utility meters/signals**; return-flow circulation is never treated as fresh-water use. Save plant-specific rates with `POST /v1/economics/cost-profiles`, build an asset + recipe-revision historical reference with `POST /v1/economics/baselines`, and evaluate later data with `POST /v1/economics/ingestions/{ingestion_id}`.
+Production-run evidence can come from MES/historian/database/API/CSV/manual/simulator sources. L4 reconstructs the contiguous uncleaned production campaign preceding a CIP and compares it with relevant historical context without claiming causation.
 
-For the built-in simulator, compare `GET /v1/demo/economics/normal` with `GET /v1/demo/economics/excessive_rinse`. The bundled dollar rates are explicitly simulator-only and are not industry benchmarks.
+Compare `GET /v1/demo/context/long_run_response` with `GET /v1/demo/context/unexpected_after_short_run`.
 
+### Outcome & diagnostic intelligence
 
+L5 links process evidence with QA results, maintenance findings, operator observations, and resolved cases. It intentionally refuses to infer hydraulic restriction from low flow alone; plant-specific joint evidence or physical confirmation is required.
 
-### Try production-context intelligence
+Try `GET /v1/demo/diagnostics/verification_failure`, `.../restriction_confirmed`, `.../sensor_freeze`, and `.../normal`.
 
-Save production-run events with `POST /v1/context/production-runs`. In mature plants those payloads are expected to come automatically from MES/historian/database/API adapters; manual entry is only a fallback. Build an immutable asset + recipe-revision context baseline with `POST /v1/context/baselines`, then evaluate a later ingestion with `POST /v1/context/ingestions/{ingestion_id}`.
+### Controlled optimization intelligence
 
-For the deterministic simulator, compare `GET /v1/demo/context/long_run_response` with `GET /v1/demo/context/unexpected_after_short_run`. The first uses a longer CIP after a historically comparable long production campaign and is contextually typical; the second uses the same CIP behavior after a short normal campaign and is contextually unusual. L4 reports association, never proof of causation or cleanliness.
+L6 converts prior evidence into a **controlled-validation candidate**, never an automatic recipe change. `GET /v1/demo/optimization/excessive_rinse` demonstrates a final-rinse endpoint reached well before phase completion and proposes a conservative trial envelope while keeping the approved endpoint authoritative.
 
-### Try automated watched-folder ingestion
+Even a successful controlled trial only supports human review; formal recipe adoption remains a plant engineering/QA/change-control decision.
 
-Save a read-only source with `POST /v1/acquisition/sources`, then run it with `POST /v1/acquisition/sources/{source_name}/run`. For a standalone poller, use `python -m app.acquisition.worker --source <name>`.
+## Validation and release documentation
 
-## Important safety boundary
+- [V1 release notes](RELEASE_NOTES_V1.md)
+- [Validation methodology](docs/validation-methodology.md)
+- [Portfolio case study](docs/portfolio-case-study.md)
+- [Real-plant pilot plan](docs/real-plant-pilot-plan.md)
+- [M11 validation release](docs/milestone-11-validation-release.md)
 
-CIP Intelligence can determine whether available process evidence indicates that a plant-defined/validated CIP process was executed as specified. It must not represent process measurements alone as proof that equipment is microbiologically clean.
+## Current status
 
-
-### Try outcome & diagnostic intelligence
-
-Store QA results with `POST /v1/diagnostics/qa-results`, maintenance findings with `POST /v1/diagnostics/maintenance-events`, operator observations with `POST /v1/diagnostics/operator-observations`, and resolved diagnostic cases with `POST /v1/diagnostics/cases`. After reconstruction + L2 compliance (and ideally L3/L4 artifacts) exist, call `POST /v1/diagnostics/ingestions/{ingestion_id}`.
-
-For the simulator, try `GET /v1/demo/diagnostics/verification_failure`, `.../restriction_confirmed`, `.../sensor_freeze`, and `.../normal`. The v0.1 library intentionally refuses to diagnose a hydraulic restriction from low flow alone; plant-specific L3 flow + pressure behavior or a physical confirmation is required.
-
-### Try controlled optimization intelligence
-
-L6 converts prior evidence into a **controlled-validation candidate**, never an automatic recipe change. Start with `GET /v1/demo/optimization/excessive_rinse` and compare it with `.../normal`, `.../low_flow`, or `.../sensor_freeze`. The excessive-rinse simulator demonstrates a final-rinse endpoint that is achieved well before the phase ends; L6 proposes a conservative nominal trial envelope while keeping the approved endpoint/hold condition authoritative.
-
-Material candidates can be frozen with `POST /v1/optimization/candidates`. Human plant decisions are recorded separately with `POST /v1/optimization/decisions`. After approved controlled trial cycles are available, `POST /v1/optimization/trials/assess` checks L2 compliance, QA outcomes, diagnostics, and measured savings. Even a perfect trial only returns `EVIDENCE_SUPPORTS_HUMAN_REVIEW`; formal recipe adoption remains a plant engineering/QA/change-control decision. See `config/example_optimization_policy.json` and `config/example_trial_assessment_request.json`.
+CIP Intelligence V1 is **portfolio-complete** and deployed as a public simulator-backed demonstration. The software architecture, automated regression suite, safety boundaries, and synthetic known-answer validation are in place. The next meaningful engineering milestone is offline validation against anonymized historical plant data before making any real-world performance claims.
