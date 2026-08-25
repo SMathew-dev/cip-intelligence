@@ -16,7 +16,25 @@ def test_product_ui_is_served():
     assert response.status_code == 200
     assert "CIP Intelligence" in response.text
     assert "Cycle Explorer" in response.text
+    assert "Historical Intelligence" in response.text
     assert "No PLC/HMI write path" in response.text
+    assert "/app/historical.js" in response.text
+
+
+def test_historical_ui_assets_are_served():
+    fixture_response = client.get("/app/historical-data.json")
+    script_response = client.get("/app/historical.js")
+
+    assert fixture_response.status_code == 200
+    fixture = fixture_response.json()
+    assert set(fixture) == {"30", "60", "90"}
+    assert fixture["90"]["simulator_only"] is True
+    assert fixture["90"]["summary"]["cycles"] == 450
+    assert fixture["90"]["interpretation"].startswith("Attention scores prioritize investigation only")
+
+    assert script_response.status_code == 200
+    assert "renderHistoricalIntelligence" in script_response.text
+    assert "historical-data.json" in script_response.text
 
 
 def test_ui_overview_fixture_is_explicitly_simulated():
