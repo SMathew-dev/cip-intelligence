@@ -1,14 +1,14 @@
 // V1.1 Historical Intelligence extension. Kept separate from the V1 UI bundle
 // so the historical feature can be reviewed and removed independently.
 (() => {
-  const originalSetView = setView;
   window.renderHistoricalIntelligence = async function(force = false) {
     const root = document.querySelector('#view-history');
     if (!root) return;
     root.innerHTML = `<div class="card card-pad"><div class="skeleton" style="height:20px;width:35%"></div><div class="skeleton" style="height:240px;margin-top:18px"></div></div>`;
     try {
       const days = window.cipHistoryDays || 90;
-      const d = await api(`/v1/demo/ui/historical?days=${days}`);
+      if (!window.cipHistoryFixture || force) window.cipHistoryFixture = await api('/app/historical-data.json');
+      const d = window.cipHistoryFixture[String(days)];
       window.cipHistoryData = d;
       root.innerHTML = `
         <div class="controls-row">
@@ -46,13 +46,12 @@
             <div class="boundary-panel"><div class="boundary-panel-title">${esc(d.interpretation)}</div><div class="boundary-panel-copy">The public V1.1 history is synthetic and known-answer by design. Real-plant use requires anonymized historical validation, plant-approved specifications, and engineering/QA review.</div></div>
           </div>
         </div>`;
-      document.querySelector('#historyWindow')?.addEventListener('change', e => { window.cipHistoryDays = Number(e.target.value); renderHistoricalIntelligence(true); });
+      document.querySelector('#historyWindow')?.addEventListener('change', e => { window.cipHistoryDays = Number(e.target.value); renderHistoricalIntelligence(); });
     } catch (e) {
       root.innerHTML = `<div class="error-box">${esc(e.message)}</div>`;
     }
   };
 
-  // Extend existing navigation without modifying the mature V1 renderer.
   document.querySelectorAll('.nav-item').forEach(btn => {
     if (btn.dataset.view !== 'history') return;
     btn.addEventListener('click', () => {
