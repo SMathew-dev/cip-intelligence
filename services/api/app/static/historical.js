@@ -1,6 +1,13 @@
 // V1.1 Historical Intelligence extension. Kept separate from the V1 UI bundle
-// so the historical feature can be reviewed and removed independently.
+// so the historical feature can be reviewed independently from the mature V1 UI.
 (() => {
+  const historyStatusChip = (status) => {
+    if (status === 'STABLE') return statusChip('NORMAL', 'STABLE');
+    if (status === 'WATCH') return statusChip('UNUSUAL', 'WATCH');
+    if (status === 'ATTENTION') return statusChip('HIGHLY_UNUSUAL', 'ATTENTION');
+    return statusChip(status);
+  };
+
   window.renderHistoricalIntelligence = async function(force = false) {
     const root = document.querySelector('#view-history');
     if (!root) return;
@@ -9,6 +16,7 @@
       const days = window.cipHistoryDays || 90;
       if (!window.cipHistoryFixture || force) window.cipHistoryFixture = await api('/app/historical-data.json');
       const d = window.cipHistoryFixture[String(days)];
+      if (!d) throw new Error(`Historical fixture unavailable for ${days} days`);
       window.cipHistoryData = d;
       root.innerHTML = `
         <div class="controls-row">
@@ -30,7 +38,7 @@
             <tbody>${d.asset_ranking.map((a,i)=>`<tr>
               <td><div class="asset-name">#${i+1}</div><div class="cell-muted">Score ${a.attention_score}/100</div></td>
               <td><div class="asset-name">${esc(a.asset)}</div><div class="cell-muted">${esc(a.asset_type)} · ${a.cycles} cycles</div></td>
-              <td>${statusChip(a.status)}</td>
+              <td>${historyStatusChip(a.status)}</td>
               <td><span class="${a.flow_change_lpm < -5 ? 'trend-bad' : 'trend-good'}">${a.flow_change_lpm>0?'+':''}${fmt(a.flow_change_lpm,1)} L/min</span><div class="cell-muted">median ${fmt(a.median_flow_lpm,1)}</div></td>
               <td><span class="${a.duration_change_min > 3 ? 'trend-warn' : 'trend-good'}">${a.duration_change_min>0?'+':''}${fmt(a.duration_change_min,1)} min</span><div class="cell-muted">median ${fmt(a.median_duration_min,1)}</div></td>
               <td>${a.process_deviations}${a.data_reviews ? `<div class="cell-muted">${a.data_reviews} data review</div>` : ''}</td>
@@ -40,21 +48,29 @@
         </div>
         <div class="grid grid-2">
           <div class="card card-pad"><div class="card-head"><div><div class="card-title">What the ranking is seeing</div><div class="card-subtitle">Transparent trends rather than a black-box score.</div></div></div>
-            <div class="finding-list">${d.asset_ranking.slice(0,3).map(a=>`<div class="finding"><div><div class="finding-title">${esc(a.asset)} · ${esc(a.status)}</div><div class="finding-copy">Flow ${a.flow_change_lpm>0?'+':''}${fmt(a.flow_change_lpm,1)} L/min across the window; duration ${a.duration_change_min>0?'+':''}${fmt(a.duration_change_min,1)} min; ${a.process_deviations} process deviations; ${a.unusual_cycles} unusual cycles.</div></div><div class="finding-meta">${statusChip(a.status)}</div></div>`).join('')}</div>
+            <div class="finding-list">${d.asset_ranking.slice(0,3).map(a=>`<div class="finding"><div><div class="finding-title">${esc(a.asset)} · ${esc(a.status)}</div><div class="finding-copy">Flow ${a.flow_change_lpm>0?'+':''}${fmt(a.flow_change_lpm,1)} L/min across the window; duration ${a.duration_change_min>0?'+':''}${fmt(a.duration_change_min,1)} min; ${a.process_deviations} process deviations; ${a.unusual_cycles} unusual cycles.</div></div><div class="finding-meta">${historyStatusChip(a.status)}</div></div>`).join('')}</div>
           </div>
           <div class="card card-pad"><div class="card-head"><div><div class="card-title">Interpretation boundary</div><div class="card-subtitle">Historical intelligence is context, not control authority.</div></div></div>
             <div class="boundary-panel"><div class="boundary-panel-title">${esc(d.interpretation)}</div><div class="boundary-panel-copy">The public V1.1 history is synthetic and known-answer by design. Real-plant use requires anonymized historical validation, plant-approved specifications, and engineering/QA review.</div></div>
           </div>
         </div>`;
-      document.querySelector('#historyWindow')?.addEventListener('change', e => { window.cipHistoryDays = Number(e.target.value); renderHistoricalIntelligence(); });
+      document.querySelector('#historyWindow')?.addEventListener('change', e => {
+        window.cipHistoryDays = Number(e.target.value);
+        renderHistoricalIntelligence();
+      });
     } catch (e) {
       root.innerHTML = `<div class="error-box">${esc(e.message)}</div>`;
     }
   };
 
-  document.querySelectorAll('.nav-item').forEach(btn => {
-    if (btn.dataset.view !== 'history') return;
-    btn.addEventListener('click', () => {
+  // app.js binds its V1 navigation before this extension loads. Replacing the
+  // history button removes that generic listener, which does not know the new
+  // viewMeta key, while preserving every mature V1 navigation handler unchanged.
+  const oldHistoryButton = document.querySelector('.nav-item[data-view="history"]');
+  if (oldHistoryButton) {
+    const historyButton = oldHistoryButton.cloneNode(true);
+    oldHistoryButton.replaceWith(historyButton);
+    historyButton.addEventListener('click', () => {
       state.view = 'history';
       document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.view === 'history'));
       document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-history'));
@@ -62,7 +78,7 @@
       document.querySelector('#pageTitle').textContent = 'See degradation before it becomes routine';
       renderHistoricalIntelligence();
     });
-  });
+  }
 
   document.querySelector('#refreshBtn')?.addEventListener('click', () => {
     if (state.view === 'history') renderHistoricalIntelligence(true);
