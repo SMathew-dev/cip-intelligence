@@ -1,0 +1,16 @@
+{
+  "name": "DEMO COSTS - NOT PLANT RATES",
+  "revision": "demo-1",
+  "currency": "USD",
+  "approval_ref": "SIMULATOR ONLY",
+  "water_cost_per_m3": 1.2,
+  "wastewater_cost_per_m3": 1.0,
+  "electricity_cost_per_kwh": 0.1,
+  "thermal_energy_cost_per_kwh": 0.05,
+  "caustic_cost_per_kg": 1.0,
+  "acid_cost_per_kg": 0.8,
+  "sanitizer_cost_per_kg": null,
+  "incremental_production_value_per_hour": 800.0,
+  "annual_cycles": 300,
+  "notes": "Arbitrary development inputs only. A real plant must load its own approved marginal costs and capacity assumptions."
+}

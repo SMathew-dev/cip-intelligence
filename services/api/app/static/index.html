@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>CIP Intelligence</title>
+  <link rel="stylesheet" href="/app/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">CI</div>
+        <div>
+          <div class="brand-name">CIP Intelligence</div>
+          <div class="brand-sub">Cleaning decision intelligence</div>
+        </div>
+      </div>
+
+      <div class="site-card">
+        <div class="site-label">ACTIVE SITE</div>
+        <div class="site-name">Demo Dairy</div>
+        <div class="site-meta"><span class="status-dot"></span> Read-only connection</div>
+      </div>
+
+      <nav class="nav" aria-label="Primary navigation">
+        <button class="nav-item active" data-view="overview"><span class="nav-icon">⌂</span><span>Overview</span></button>
+        <button class="nav-item" data-view="cycles"><span class="nav-icon">≋</span><span>Cycle Explorer</span></button>
+        <button class="nav-item" data-view="investigations"><span class="nav-icon">⌕</span><span>Investigations</span><span class="nav-count">3</span></button>
+        <button class="nav-item" data-view="optimization"><span class="nav-icon">↗</span><span>Optimization</span><span class="nav-count">1</span></button>
+        <button class="nav-item" data-view="data-health"><span class="nav-icon">◌</span><span>Data Health</span></button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="control-boundary">
+          <div class="boundary-kicker">CONTROL BOUNDARY</div>
+          <div class="boundary-title"><span class="lock-dot"></span> Observe only</div>
+          <div class="boundary-copy">No PLC/HMI write path</div>
+        </div>
+        <div class="version">M9 UI · Demo build</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow" id="pageEyebrow">PLANT OVERVIEW</div>
+          <h1 id="pageTitle">Good morning</h1>
+        </div>
+        <div class="topbar-actions">
+          <div class="demo-pill">SIMULATED DATA</div>
+          <button class="icon-button" id="refreshBtn" aria-label="Refresh">↻</button>
+        </div>
+      </header>
+
+      <section id="view-overview" class="view active"></section>
+      <section id="view-cycles" class="view"></section>
+      <section id="view-investigations" class="view"></section>
+      <section id="view-optimization" class="view"></section>
+      <section id="view-data-health" class="view"></section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/app/app.js" defer></script>
+</body>
+</html>

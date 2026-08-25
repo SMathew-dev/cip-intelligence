@@ -1,0 +1,13 @@
+{
+  "case_id": "DXCASE-000031",
+  "asset": "HTST-01",
+  "diagnosis_code": "DX-HYD-RESTRICTION",
+  "predicted_ts": "2026-08-25T12:00:00+00:00",
+  "confirmed_code": "DX-HYD-RESTRICTION",
+  "confirmation_status": "CONFIRMED",
+  "confirmation_ref": "cmms://WO-84019",
+  "signature": {
+    "flow_direction": "LOW",
+    "pressure_direction": "HIGH"
+  }
+}

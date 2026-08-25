@@ -1,0 +1,29 @@
+{
+  "run_id": "MES-HTST01-2026-08-25-B1042",
+  "asset": "HTST-01",
+  "product_code": "MILK-A",
+  "product_family": "MILK",
+  "batch_ref": "B1042",
+  "start_ts": "2026-08-25T00:30:00+00:00",
+  "end_ts": "2026-08-25T10:45:00+00:00",
+  "source_type": "MES",
+  "source_ref": "mes://production-runs/B1042",
+  "metrics": {
+    "average_throughput_lph": 10350,
+    "total_volume_l": 106087.5,
+    "fat_pct": 3.25,
+    "protein_pct": 3.15,
+    "total_solids_pct": 12.4,
+    "process_temperature_avg_c": 74.2,
+    "process_temperature_max_c": 75.0,
+    "shutdown_minutes": 8,
+    "pressure_drop_start_bar": 0.5,
+    "pressure_drop_end_bar": 0.82,
+    "normalized_heat_transfer_start": 1.0,
+    "normalized_heat_transfer_end": 0.91
+  },
+  "metadata": {
+    "example_only": true,
+    "note": "Illustrative integration payload, not a universal dairy process target."
+  }
+}

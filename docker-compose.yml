@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cip_intelligence
+      POSTGRES_USER: cip
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cip -d cip_intelligence"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  api:
+    build: ./services/api
+    environment:
+      DATABASE_URL: postgresql://cip:${POSTGRES_PASSWORD:-change-me}@postgres:5432/cip_intelligence
+      CIP_MODE: read_only
+      CIP_AUTH_ENABLED: ${CIP_AUTH_ENABLED:-false}
+      CIP_API_KEYS: ${CIP_API_KEYS:-}
+    ports: ["8000:8000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    read_only: true
+    tmpfs: [/tmp]
+    volumes:
+      - cipruntime:/app/runtime
+volumes:
+  pgdata:
+  cipruntime:

@@ -1,0 +1,14 @@
+{
+  "result_id": "ATP-2026-000184",
+  "asset": "HTST-01",
+  "sample_ts": "2026-08-25T12:20:00+00:00",
+  "result_type": "ATP",
+  "outcome": "FAIL",
+  "value": 340,
+  "unit": "RLU",
+  "location": "HTST return outlet",
+  "method": "plant-approved ATP method",
+  "source_type": "LIMS",
+  "source_ref": "lims://ATP-2026-000184",
+  "metadata": {}
+}

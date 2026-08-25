@@ -1,0 +1,103 @@
+{
+  "name": "HTST Full CIP",
+  "revision": "7",
+  "asset": "HTST-01",
+  "effective_from": "2026-01-01T00:00:00+00:00",
+  "effective_to": null,
+  "approval_ref": "SIMULATED-VALIDATION-REF-HTST-007",
+  "metadata": {
+    "demo_only": true,
+    "warning": "Thresholds in this file are simulated development values, not universal CIP recommendations. Real deployments must use the plant's approved validation specification."
+  },
+  "policy": {
+    "allow_inferred_phase_for_compliance": false,
+    "minimum_phase_confidence": 0.95,
+    "flatline_duration_seconds": 120,
+    "max_sample_interval_factor": 2.5
+  },
+  "requirements": [
+    {
+      "code": "HTST-PRE-RINSE-DURATION",
+      "title": "Pre-rinse minimum duration",
+      "phase": "PRE_RINSE",
+      "kind": "PHASE_DURATION",
+      "minimum_seconds": 360
+    },
+    {
+      "code": "HTST-CAUSTIC-DURATION",
+      "title": "Caustic circulation minimum duration",
+      "phase": "CAUSTIC",
+      "kind": "PHASE_DURATION",
+      "minimum_seconds": 1200
+    },
+    {
+      "code": "HTST-CAUSTIC-VALIDATED-EXPOSURE",
+      "title": "Concurrent caustic validated exposure",
+      "phase": "CAUSTIC",
+      "kind": "CONCURRENT_EXPOSURE",
+      "minimum_seconds": 1200,
+      "minimum_data_coverage": 0.95,
+      "conditions": [
+        {
+          "metric": "return_temperature_c",
+          "operator": "gte",
+          "minimum": 72.0,
+          "unit": "C"
+        },
+        {
+          "metric": "return_flow_lpm",
+          "operator": "gte",
+          "minimum": 380.0,
+          "unit": "L/min"
+        },
+        {
+          "metric": "return_conductivity_mscm",
+          "operator": "between",
+          "minimum": 42.0,
+          "maximum": 48.0,
+          "unit": "mS/cm"
+        }
+      ]
+    },
+    {
+      "code": "HTST-ACID-EXPOSURE",
+      "title": "Acid validated exposure",
+      "phase": "ACID",
+      "kind": "CONCURRENT_EXPOSURE",
+      "minimum_seconds": 480,
+      "minimum_data_coverage": 0.95,
+      "conditions": [
+        {
+          "metric": "return_temperature_c",
+          "operator": "gte",
+          "minimum": 60.0,
+          "unit": "C"
+        },
+        {
+          "metric": "return_conductivity_mscm",
+          "operator": "between",
+          "minimum": 15.0,
+          "maximum": 25.0,
+          "unit": "mS/cm"
+        }
+      ]
+    },
+    {
+      "code": "HTST-FINAL-RINSE-ENDPOINT",
+      "title": "Final rinse conductivity endpoint",
+      "phase": "FINAL_RINSE",
+      "kind": "ENDPOINT",
+      "endpoint_hold_seconds": 30,
+      "minimum_data_coverage": 0.95,
+      "conditions": [
+        {
+          "metric": "return_conductivity_mscm",
+          "operator": "lte",
+          "maximum": 1.5,
+          "unit": "mS/cm"
+        }
+      ],
+      "flatline_policy": "ALLOW_STABLE_ENDPOINT"
+    }
+  ]
+}

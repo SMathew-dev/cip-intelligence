@@ -1,0 +1,26 @@
+{
+  "name": "HTST-01-production-context",
+  "revision": "1",
+  "asset": "HTST-01",
+  "recipe_name": "HTST Full CIP",
+  "recipe_revision": "7",
+  "ingestion_ids": [
+    "replace-with-historical-ingestion-id-1",
+    "replace-with-historical-ingestion-id-2"
+  ],
+  "description": "Reviewed production-context baseline for HTST-01.",
+  "policy": {
+    "max_lookback_hours": 48,
+    "max_inter_run_gap_hours": 4,
+    "long_pre_cip_idle_hours": 2,
+    "minimum_training_cycles": 20,
+    "minimum_comparable_cycles": 8,
+    "maximum_neighbors": 20,
+    "minimum_shared_context_features": 3,
+    "max_context_distance": 2.75,
+    "require_same_product_family": true,
+    "warning_robust_z": 3.5,
+    "high_robust_z": 5.0,
+    "maximum_reported_differences": 10
+  }
+}

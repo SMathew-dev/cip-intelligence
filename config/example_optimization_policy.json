@@ -1,0 +1,16 @@
+{
+  "minimum_reference_cycles": 30,
+  "minimum_outcome_cycles": 20,
+  "minimum_outcome_coverage": 0.8,
+  "minimum_historical_pass_rate": 0.98,
+  "minimum_endpoint_margin_seconds": 60,
+  "minimum_time_saving_seconds": 60,
+  "trial_guard_band_seconds": 60,
+  "maximum_single_trial_reduction_fraction": 0.4,
+  "block_on_high_diagnostic_hypothesis": true,
+  "block_on_confirmed_unresolved_condition": true,
+  "require_qa_for_hygiene_sensitive_change": true,
+  "minimum_trial_cycles": 10,
+  "maximum_trial_failed_verifications": 0,
+  "warning": "Development governance example only. A real facility must approve its own optimization/validation policy."
+}

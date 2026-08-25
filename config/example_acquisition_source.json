@@ -1,0 +1,13 @@
+{
+  "name": "plant-historian-export-folder",
+  "adapter_type": "watched_folder",
+  "mapping_profile": "messy-demo",
+  "read_only": true,
+  "enabled": true,
+  "poll_seconds": 60,
+  "config": {
+    "folder": "/plant-data/cip-exports",
+    "patterns": ["*.csv"],
+    "settle_seconds": 30
+  }
+}

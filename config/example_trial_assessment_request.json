@@ -1,0 +1,15 @@
+{
+  "candidate_id": "opt-example-id-from-saved-candidate",
+  "engineering_approval_ref": "ENG-CHANGE-EXAMPLE",
+  "qa_approval_ref": "QA-VALIDATION-EXAMPLE",
+  "protocol_ref": "CIP-VAL-PROTOCOL-EXAMPLE",
+  "results": [
+    {
+      "cycle_id": "trial-cycle-001",
+      "l2_assessment": "COMPLIANT",
+      "verification_outcome": "PASS",
+      "diagnostic_status": "NO_FINDINGS",
+      "measured_savings": {"water_m3": 0.8, "cip_time_seconds": 360}
+    }
+  ]
+}

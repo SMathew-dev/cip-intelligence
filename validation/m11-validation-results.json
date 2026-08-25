@@ -1,0 +1,137 @@
+{
+  "metrics": {
+    "synthetic_assets": 4,
+    "generated_evaluation_cycles": 2000,
+    "baseline_cycles": 240,
+    "total_cycles_exercised": 2240,
+    "elapsed_seconds": 27.148,
+    "cycles_per_second": 82.51,
+    "l2_overall_expected_rate": 1.0,
+    "normal_l3_false_alarm_rate": 0.008333333333333333,
+    "behavioral_fault_detection_rate": 1.0
+  },
+  "scenario_summary": {
+    "normal": {
+      "n": 720,
+      "l2": {
+        "COMPLIANT": 720
+      },
+      "l3": {
+        "NORMAL": 714,
+        "UNUSUAL": 6
+      },
+      "l2_expected_rate": 1.0,
+      "l3_expected_rate": 0.9916666666666667
+    },
+    "low_temp": {
+      "n": 240,
+      "l2": {
+        "PROCESS_DEVIATION": 240
+      },
+      "l3": {
+        "HIGHLY_UNUSUAL": 240
+      },
+      "l2_expected_rate": 1.0
+    },
+    "low_flow": {
+      "n": 240,
+      "l2": {
+        "PROCESS_DEVIATION": 240
+      },
+      "l3": {
+        "HIGHLY_UNUSUAL": 240
+      },
+      "l2_expected_rate": 1.0
+    },
+    "sensor_freeze": {
+      "n": 160,
+      "l2": {
+        "DATA_REVIEW_REQUIRED": 160
+      },
+      "l3": {
+        "NOT_EVALUABLE": 160
+      },
+      "l2_expected_rate": 1.0
+    },
+    "excessive_rinse": {
+      "n": 240,
+      "l2": {
+        "COMPLIANT": 240
+      },
+      "l3": {
+        "HIGHLY_UNUSUAL": 240
+      },
+      "l2_expected_rate": 1.0,
+      "l3_expected_rate": 1.0
+    },
+    "compliant_low_flow": {
+      "n": 240,
+      "l2": {
+        "COMPLIANT": 240
+      },
+      "l3": {
+        "HIGHLY_UNUSUAL": 240
+      },
+      "l2_expected_rate": 1.0,
+      "l3_expected_rate": 1.0
+    },
+    "profile_shift": {
+      "n": 160,
+      "l2": {
+        "COMPLIANT": 160
+      },
+      "l3": {
+        "HIGHLY_UNUSUAL": 160
+      },
+      "l2_expected_rate": 1.0,
+      "l3_expected_rate": 1.0
+    }
+  },
+  "per_asset": {
+    "HTST-01": {
+      "evaluation_cycles": 500,
+      "baseline_cycles": 60,
+      "baseline_maturity": "ESTABLISHED",
+      "l2_expected_rate": 1.0,
+      "normal_l3_false_alarm_rate": 0.005555555555555556,
+      "behavioral_fault_detection_rate": 1.0
+    },
+    "HTST-02": {
+      "evaluation_cycles": 500,
+      "baseline_cycles": 60,
+      "baseline_maturity": "ESTABLISHED",
+      "l2_expected_rate": 1.0,
+      "normal_l3_false_alarm_rate": 0.011111111111111112,
+      "behavioral_fault_detection_rate": 1.0
+    },
+    "HTST-03": {
+      "evaluation_cycles": 500,
+      "baseline_cycles": 60,
+      "baseline_maturity": "ESTABLISHED",
+      "l2_expected_rate": 1.0,
+      "normal_l3_false_alarm_rate": 0.011111111111111112,
+      "behavioral_fault_detection_rate": 1.0
+    },
+    "HTST-04": {
+      "evaluation_cycles": 500,
+      "baseline_cycles": 60,
+      "baseline_maturity": "ESTABLISHED",
+      "l2_expected_rate": 1.0,
+      "normal_l3_false_alarm_rate": 0.005555555555555556,
+      "behavioral_fault_detection_rate": 1.0
+    }
+  },
+  "baseline": {
+    "assets": 4,
+    "training_cycle_count_total": 240,
+    "training_cycle_count_per_asset": 60,
+    "maturity": [
+      "ESTABLISHED"
+    ]
+  },
+  "limitations": [
+    "Synthetic known-answer regression only; not real-plant accuracy.",
+    "All four simulated circuits use the same development-only HTST recipe envelope.",
+    "Large-scale campaign focuses on reconstruction, L2 compliance, and L3 behavior; L0/L4/L5/L6 contracts are covered by the application regression suite."
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "HTST-01-resource-reference",
+  "revision": "1",
+  "asset": "HTST-01",
+  "recipe_name": "HTST Full CIP",
+  "recipe_revision": "7",
+  "ingestion_ids": ["replace-with-historical-ingestion-ids"],
+  "description": "Historical resource reference from eligible L2-compliant cycles for the same asset and recipe revision.",
+  "policy": {
+    "minimum_meter_coverage": 0.95,
+    "maximum_integration_gap_seconds": 30,
+    "minimum_baseline_cycles": 20,
+    "minimum_reference_cycles": 15,
+    "excessive_threshold_fraction": 0.05
+  }
+}

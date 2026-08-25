@@ -1,0 +1,13 @@
+{
+  "event_id": "WO-84019",
+  "asset": "HTST-01",
+  "event_ts": "2026-08-25T14:10:00+00:00",
+  "component": "V-214",
+  "action": "inspect return valve",
+  "finding_code": "DX-HYD-RESTRICTION",
+  "finding_text": "Physical restriction confirmed during inspection.",
+  "confirmation_status": "CONFIRMED",
+  "source_type": "CMMS",
+  "source_ref": "cmms://WO-84019",
+  "metadata": {}
+}

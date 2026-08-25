@@ -1,0 +1,16 @@
+{
+  "name": "messy-demo",
+  "plant": "Demo Dairy",
+  "source_system": "Legacy historian export",
+  "timezone": "America/Chicago",
+  "timestamp_column": "Date/Time Local",
+  "asset_default": null,
+  "mappings": [
+    {"source_column": "Equipment ID", "concept": "cip.asset", "source_unit": null, "scale_factor": 1.0, "offset_value": 0.0},
+    {"source_column": "CIP Return Temp [F]", "concept": "cip.return.temperature", "source_unit": "F", "scale_factor": 1.0, "offset_value": 0.0},
+    {"source_column": "CIP Return Flow [gpm]", "concept": "cip.return.flow", "source_unit": "gpm", "scale_factor": 1.0, "offset_value": 0.0},
+    {"source_column": "RET_COND [uS/cm]", "concept": "cip.return.conductivity", "source_unit": "uS/cm", "scale_factor": 1.0, "offset_value": 0.0},
+    {"source_column": "Return Pressure [psi]", "concept": "cip.return.pressure", "source_unit": "psi", "scale_factor": 1.0, "offset_value": 0.0},
+    {"source_column": "CIP Step", "concept": "cip.sequence.phase", "source_unit": null, "scale_factor": 1.0, "offset_value": 0.0}
+  ]
+}

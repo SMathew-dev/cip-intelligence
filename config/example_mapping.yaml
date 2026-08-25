@@ -1,0 +1,20 @@
+plant: Demo Dairy
+source: Demo Historian
+asset: HTST-01
+mappings:
+  TT_420_RET:
+    concept: cip.return.temperature
+    source_unit: C
+  FIT_214:
+    concept: cip.return.flow
+    source_unit: L/min
+  AIT_104:
+    concept: cip.return.conductivity
+    source_unit: mS/cm
+  PT_207:
+    concept: cip.return.pressure
+    source_unit: bar
+  CIPSEQ_STEP:
+    concept: cip.sequence.phase
+  P204_RUN:
+    concept: cip.supply_pump.state
