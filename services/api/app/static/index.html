@@ -27,6 +27,7 @@
       <nav class="nav" aria-label="Primary navigation">
         <button class="nav-item active" data-view="overview"><span class="nav-icon">⌂</span><span>Overview</span></button>
         <button class="nav-item" data-view="cycles"><span class="nav-icon">≋</span><span>Cycle Explorer</span></button>
+        <button class="nav-item" data-view="history"><span class="nav-icon">⌁</span><span>Historical Intelligence</span></button>
         <button class="nav-item" data-view="investigations"><span class="nav-icon">⌕</span><span>Investigations</span><span class="nav-count">3</span></button>
         <button class="nav-item" data-view="optimization"><span class="nav-icon">↗</span><span>Optimization</span><span class="nav-count">1</span></button>
         <button class="nav-item" data-view="data-health"><span class="nav-icon">◌</span><span>Data Health</span></button>
@@ -38,7 +39,7 @@
           <div class="boundary-title"><span class="lock-dot"></span> Observe only</div>
           <div class="boundary-copy">No PLC/HMI write path</div>
         </div>
-        <div class="version">M9 UI · Demo build</div>
+        <div class="version">V1.1 · Historical Intelligence</div>
       </div>
     </aside>
 
@@ -56,6 +57,7 @@
 
       <section id="view-overview" class="view active"></section>
       <section id="view-cycles" class="view"></section>
+      <section id="view-history" class="view"></section>
       <section id="view-investigations" class="view"></section>
       <section id="view-optimization" class="view"></section>
       <section id="view-data-health" class="view"></section>
@@ -64,5 +66,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="/app/app.js" defer></script>
+  <script src="/app/historical.js" defer></script>
 </body>
 </html>
