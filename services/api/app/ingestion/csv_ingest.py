@@ -5,6 +5,7 @@ import hashlib
 import io
 import json
 import math
+import re
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -17,6 +18,10 @@ from app.ingestion.units import convert_value
 
 
 SUPPORTED_ENCODINGS = ("utf-8-sig", "utf-8", "cp1252")
+ASSET_TAG_PATTERN = re.compile(
+    r"(?<![A-Za-z0-9])((?:POL(?:ISHER)?|HTST|UHT|CIP|TANK|SILO|PASTEURIZER|LINE|RO|UF)[ _-]?\d+[A-Za-z]?)(?![A-Za-z0-9])",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -25,6 +30,73 @@ class ParsedTable:
     rows: list[dict[str, str]]
     delimiter: str
     encoding: str
+
+
+def _canonical_asset_label(raw: str) -> str:
+    label = re.sub(r"\s+", "-", raw.strip().upper())
+    label = re.sub(r"_+", "-", label)
+    return re.sub(r"-+", "-", label)
+
+
+def discover_assets(table: ParsedTable, columns: list[dict]) -> dict:
+    """Propose a plant organization from explicit asset values or wide tag names.
+
+    Discovery is intentionally advisory. Equipment identity becomes analytical
+    truth only after a plant engineer approves the proposal.
+    """
+    asset_columns = [
+        c["source_column"] for c in columns
+        if any(x.get("concept") == "cip.asset" for x in c["mapping_candidates"])
+    ]
+    if asset_columns:
+        source_column = asset_columns[0]
+        values = sorted({
+            row.get(source_column, "").strip() for row in table.rows
+            if row.get(source_column, "").strip()
+        })
+        signal_columns = [
+            c["source_column"] for c in columns
+            if c["source_column"] != source_column and c["mapping_candidates"]
+        ]
+        return {
+            "mode": "row_identity",
+            "source_column": source_column,
+            "assets": [
+                {"proposed_name": value, "signal_columns": signal_columns}
+                for value in values[:50]
+            ],
+            "truncated": len(values) > 50,
+            "review_required": True,
+            "rule": "Distinct equipment values are proposed as circuits; confirm aliases and physical boundaries before ingestion.",
+        }
+
+    grouped: dict[str, list[str]] = {}
+    for column in columns:
+        if not column["mapping_candidates"]:
+            continue
+        match = ASSET_TAG_PATTERN.search(column["source_column"])
+        if match:
+            grouped.setdefault(_canonical_asset_label(match.group(1)), []).append(column["source_column"])
+    if grouped:
+        return {
+            "mode": "wide_tag_prefix",
+            "source_column": None,
+            "assets": [
+                {"proposed_name": name, "signal_columns": signals}
+                for name, signals in sorted(grouped.items())
+            ],
+            "truncated": False,
+            "review_required": True,
+            "rule": "Equipment names were inferred from tag prefixes; confirm every proposed circuit and signal assignment.",
+        }
+    return {
+        "mode": "unresolved",
+        "source_column": None,
+        "assets": [],
+        "truncated": False,
+        "review_required": True,
+        "rule": "No reliable equipment identity was found; select an equipment column or assign a circuit before ingestion.",
+    }
 
 
 def sha256_bytes(content: bytes) -> str:
@@ -99,6 +171,7 @@ def inspect_csv(content: bytes, preview_rows: int = 8) -> dict:
             "confidence": timestamp_confidence,
         },
         "columns": columns,
+        "organization_proposal": discover_assets(table, columns),
         "preview": table.rows[:preview_rows],
         "rule": "Mapping candidates are suggestions only; they are not plant-approved mappings until saved explicitly.",
     }
@@ -180,11 +253,20 @@ def _normalize_scalar(raw: str, concept: str, source_unit: str | None, scale: fl
     except ValueError:
         return None, raw, "NON_NUMERIC_VALUE"
 
+    # NaN bypasses range comparisons; infinities also cannot be serialized as
+    # standard JSON. Keep the source text, but never promote these to evidence.
+    if not math.isfinite(numeric):
+        return None, raw, "NON_FINITE_VALUE"
     numeric = numeric * scale + offset
+    if not math.isfinite(numeric):
+        return None, raw, "NON_FINITE_VALUE"
     try:
         canonical = convert_value(numeric, source_unit, semantic.canonical_unit)
     except ValueError:
         return numeric, None, "UNSUPPORTED_UNIT_CONVERSION"
+
+    if not math.isfinite(canonical):
+        return None, raw, "NON_FINITE_VALUE"
 
     if semantic.plausible_range:
         low, high = semantic.plausible_range
@@ -242,7 +324,7 @@ def normalize_csv(content: bytes, profile: MappingProfile) -> dict:
             if quality:
                 issues.append({
                     "code": quality,
-                    "severity": "HIGH" if quality in {"OUTSIDE_PLAUSIBLE_RANGE", "UNSUPPORTED_UNIT_CONVERSION"} else "MEDIUM",
+                    "severity": "HIGH" if quality in {"OUTSIDE_PLAUSIBLE_RANGE", "UNSUPPORTED_UNIT_CONVERSION", "NON_FINITE_VALUE"} else "MEDIUM",
                     "row": row_number,
                     "column": mapping.source_column,
                     "concept": mapping.concept,

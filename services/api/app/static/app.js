@@ -16,6 +16,7 @@ const viewMeta = {
   investigations: ['WORKSPACE / ENGINEERING REVIEW', 'Investigations'],
   optimization: ['WORKSPACE / CONTROLLED VALIDATION', 'Optimization opportunities'],
   'data-health': ['WORKSPACE / MEASUREMENT INTEGRITY', 'Data health'],
+  connections: ['WORKSPACE / DATA ONBOARDING', 'Add plant data'],
 };
 
 function esc(v) {
@@ -76,6 +77,122 @@ function setView(view) {
   if (view === 'investigations') renderInvestigations();
   if (view === 'optimization') renderOptimization();
   if (view === 'data-health') renderDataHealth();
+  if (view === 'connections') renderConnections();
+}
+
+function suggestedConcept(column) {
+  const candidate = column.mapping_candidates?.[0];
+  return candidate?.concept || null;
+}
+
+function readinessItem(label, ready, detail) {
+  return `<div class="readiness-item ${ready ? 'ready' : 'blocked'}">
+    <div class="readiness-state">${ready ? 'AVAILABLE' : 'NEEDS EVIDENCE'}</div>
+    <div class="readiness-title">${esc(label)}</div>
+    <div class="readiness-copy">${esc(detail)}</div>
+  </div>`;
+}
+
+function renderConnections() {
+  const root = $('#view-connections');
+  if (root.dataset.ready) return;
+  root.dataset.ready = 'true';
+  root.innerHTML = `<div class="onboarding-grid">
+    <div class="card upload-panel">
+      <div class="step-mark">01</div>
+      <div class="card-title upload-title">Inspect an existing plant export</div>
+      <div class="upload-lead">Start with a timestamped CSV from a historian, HMI, or approved reporting system. Inspection does not run compliance analysis or change plant controls.</div>
+      <label class="drop-zone" id="dropZone" for="plantFile">
+        <input id="plantFile" type="file" accept=".csv,text/csv" />
+        <span class="drop-icon">↑</span>
+        <strong>Choose a CSV export</strong>
+        <span>or drop it here · up to 25 MB</span>
+      </label>
+      <div class="selected-file" id="selectedFile" hidden></div>
+      <button class="primary-btn inspect-btn" id="inspectFile" disabled>Inspect file</button>
+      <div class="upload-status" id="uploadStatus" role="status" aria-live="polite"></div>
+    </div>
+    <div class="card card-pad evidence-guide">
+      <div class="step-mark">BEFORE YOU START</div>
+      <div class="card-title">Useful evidence</div>
+      <div class="evidence-checklist">
+        <div><strong>Required</strong><span>Timestamp and equipment or circuit identity</span></div>
+        <div><strong>Core process</strong><span>Return temperature, flow, conductivity and CIP step</span></div>
+        <div><strong>Compliance</strong><span>Plant-approved recipe limits and revision history</span></div>
+        <div><strong>Resource use</strong><span>Dedicated water, wastewater, power or chemical measurements</span></div>
+      </div>
+      <div class="boundary-box">Use only data you are authorized to export. This public demonstration is not configured for confidential plant records.</div>
+    </div>
+  </div>
+  <div id="inspectionResults"></div>`;
+
+  const input = $('#plantFile', root);
+  const zone = $('#dropZone', root);
+  const inspect = $('#inspectFile', root);
+  const selected = $('#selectedFile', root);
+  const status = $('#uploadStatus', root);
+  let file = null;
+
+  function selectFile(next) {
+    file = next || null;
+    const valid = file && file.name.toLowerCase().endsWith('.csv') && file.size <= 25 * 1024 * 1024;
+    inspect.disabled = !valid;
+    selected.hidden = !file;
+    const size = !file ? '' : file.size >= 1024 * 1024 ? `${fmt(file.size / 1024 / 1024, 1)} MB` : `${fmt(file.size / 1024, 1)} KB`;
+    selected.textContent = !file ? '' : `${file.name} · ${size}`;
+    status.textContent = file && !valid ? 'Select a CSV file no larger than 25 MB.' : '';
+  }
+  input.addEventListener('change', () => selectFile(input.files[0]));
+  ['dragenter','dragover'].forEach(name => zone.addEventListener(name, e => { e.preventDefault(); zone.classList.add('dragging'); }));
+  ['dragleave','drop'].forEach(name => zone.addEventListener(name, e => { e.preventDefault(); zone.classList.remove('dragging'); }));
+  zone.addEventListener('drop', e => selectFile(e.dataTransfer.files[0]));
+  inspect.addEventListener('click', async () => {
+    if (!file) return;
+    inspect.disabled = true;
+    status.textContent = 'Inspecting structure and measurement evidence…';
+    const form = new FormData(); form.append('file', file);
+    try {
+      const response = await fetch('/v1/ingestion/inspect', {method:'POST', body:form});
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.detail || `Inspection failed (${response.status})`);
+      renderInspection(body);
+      status.textContent = 'Inspection complete. Suggestions require engineering approval.';
+    } catch (error) {
+      status.textContent = error.message;
+    } finally { inspect.disabled = false; }
+  });
+}
+
+function renderInspection(data) {
+  const root = $('#inspectionResults');
+  const concepts = new Set(data.columns.map(suggestedConcept).filter(Boolean));
+  const organization = data.organization_proposal || {mode:'unresolved', assets:[], rule:'Equipment identity requires review.'};
+  const core = ['cip.return.temperature','cip.return.flow','cip.return.conductivity'];
+  const reconstruction = Boolean(data.timestamp_candidate?.column) && core.some(x => concepts.has(x));
+  const compliance = core.every(x => concepts.has(x));
+  const resources = [...concepts].some(x => x.startsWith('cip.utility.') || x.startsWith('cip.chemical.'));
+  root.innerHTML = `<div class="inspection-head">
+      <div><div class="eyebrow">INSPECTION RESULT</div><h2>${esc(data.filename)}</h2></div>
+      <div class="file-facts"><span>${data.row_count_previewed} rows sampled</span><span>${data.columns.length} columns</span><span>${esc(data.encoding)}</span></div>
+    </div>
+    <div class="readiness-grid">
+      ${readinessItem('Cycle reconstruction', reconstruction, reconstruction ? 'Timestamp and process evidence were detected.' : 'A timestamp plus recognizable process measurements are required.')}
+      ${readinessItem('Compliance evaluation', compliance, compliance ? 'Core process signals detected. An approved recipe is still required.' : 'Temperature, flow and conductivity evidence are incomplete.')}
+      ${readinessItem('Resource accounting', resources, resources ? 'A dedicated utility or chemical signal was detected.' : 'Do not interpret recirculating process flow as water consumption.')}
+    </div>
+    <div class="card card-pad organization-review">
+      <div class="card-head"><div><div class="card-title">Draft plant organization</div><div class="card-subtitle">${esc(organization.rule)}</div></div><span class="review-badge">${organization.assets.length ? `${organization.assets.length} PROPOSED` : 'IDENTITY NEEDED'}</span></div>
+      ${organization.assets.length ? `<div class="asset-proposal-grid">${organization.assets.map(asset => `<div class="asset-proposal">
+        <div class="asset-proposal-head"><span class="asset-monogram">${esc(asset.proposed_name.slice(0,2))}</span><div><strong>${esc(asset.proposed_name)}</strong><span>${asset.signal_columns.length} signal${asset.signal_columns.length===1?'':'s'} assigned</span></div></div>
+        <div class="signal-list">${asset.signal_columns.slice(0,5).map(signal => `<span>${esc(signal)}</span>`).join('')}${asset.signal_columns.length>5 ? `<span>+${asset.signal_columns.length-5} more</span>` : ''}</div>
+      </div>`).join('')}</div>` : `<div class="unresolved-organization"><strong>No equipment groups created</strong><span>Choose an asset or circuit column, or rename wide-format tags so their equipment prefix is identifiable.</span></div>`}
+    </div>
+    <div class="card card-pad mapping-review">
+      <div class="card-head"><div><div class="card-title">Review suggested mappings</div><div class="card-subtitle">Suggestions are never treated as plant truth until an engineer confirms tag meaning and units.</div></div><span class="review-badge">REVIEW REQUIRED</span></div>
+      <div class="table-wrap"><table><thead><tr><th>Source column</th><th>Detected type</th><th>Suggested meaning</th><th>Evidence</th></tr></thead>
+      <tbody>${data.columns.map(c => { const candidate=c.mapping_candidates?.[0]; return `<tr><td class="asset-name">${esc(c.source_column)}</td><td>${c.numeric_fraction >= .8 ? 'Numeric' : c.numeric_fraction > 0 ? 'Mixed' : 'Text'}</td><td>${candidate ? esc(candidate.concept.replace('cip.','').replaceAll('.',' / ')) : '<span class="cell-muted">No safe suggestion</span>'}</td><td>${candidate ? `<span class="status-chip status-warn">Confirm${candidate.source_unit_guess ? ` · ${esc(candidate.source_unit_guess)}` : ''}</span>` : '<span class="status-chip status-data">Unmapped</span>'}</td></tr>`; }).join('')}</tbody></table></div>
+    </div>`;
+  root.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function metricCard(label, value, unit, foot, cls = '') {

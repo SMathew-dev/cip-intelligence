@@ -41,6 +41,14 @@ settings = Settings.load(REPO_ROOT)
 prod_db = ProductionDB(settings.runtime_dir / "production.sqlite3")
 job_runner = JobRunner(prod_db)
 app = FastAPI(title="CIP Intelligence API", version="1.1.0")
+MAX_UPLOAD_BYTES = 25 * 1024 * 1024
+
+
+async def read_bounded_upload(file: UploadFile) -> bytes:
+    content = await file.read(MAX_UPLOAD_BYTES + 1)
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="CSV exceeds the 25 MB inspection limit.")
+    return content
 if settings.allowed_origins:
     app.add_middleware(CORSMiddleware, allow_origins=list(settings.allowed_origins), allow_credentials=False, allow_methods=["GET","POST"], allow_headers=["Authorization","Content-Type","X-Request-ID"])
 ingestion_service = IngestionService(settings.runtime_dir)
@@ -134,7 +142,7 @@ def health() -> dict:
 async def inspect_upload(file: UploadFile = File(...)) -> dict:
     if file.filename and not file.filename.lower().endswith(".csv"):
         raise HTTPException(status_code=415, detail="Milestone 1A currently accepts CSV files. XLSX is next.")
-    content = await file.read()
+    content = await read_bounded_upload(file)
     try:
         result = ingestion_service.inspect(content)
     except ValueError as exc:
@@ -159,7 +167,7 @@ def list_mappings() -> dict:
 async def ingest_upload(profile_name: str, file: UploadFile = File(...)) -> dict:
     if file.filename and not file.filename.lower().endswith(".csv"):
         raise HTTPException(status_code=415, detail="Milestone 1A currently accepts CSV files. XLSX is next.")
-    content = await file.read()
+    content = await read_bounded_upload(file)
     try:
         return ingestion_service.ingest(content, file.filename or "upload.csv", profile_name)
     except FileNotFoundError as exc:
