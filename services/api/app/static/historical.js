@@ -23,7 +23,7 @@
           <div class="select-wrap"><span class="select-label">History window</span><select id="historyWindow">
             ${[30,60,90].map(v => `<option value="${v}" ${v===days?'selected':''}>${v} days</option>`).join('')}
           </select></div>
-          <span style="margin-left:auto;color:var(--muted);font-size:9.5px">Deterministic simulator history · investigation prioritization only</span>
+          <span style="margin-left:auto;color:var(--muted);font-size:12px">Synthetic history · investigation prioritization only</span>
         </div>
         <div class="grid grid-4" style="margin-bottom:14px">
           ${metricCard('Historical cycles', d.summary.cycles, '', `${d.summary.assets} monitored assets`)}
@@ -74,8 +74,8 @@
       state.view = 'history';
       document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.view === 'history'));
       document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-history'));
-      document.querySelector('#pageEyebrow').textContent = 'HISTORICAL INTELLIGENCE';
-      document.querySelector('#pageTitle').textContent = 'See degradation before it becomes routine';
+      document.querySelector('#pageEyebrow').textContent = 'WORKSPACE / LONGITUDINAL ANALYSIS';
+      document.querySelector('#pageTitle').textContent = 'Historical intelligence';
       renderHistoricalIntelligence();
     });
   }

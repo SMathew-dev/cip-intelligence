@@ -11,11 +11,11 @@ const state = {
 };
 
 const viewMeta = {
-  overview: ['PLANT OVERVIEW', 'Good morning'],
-  cycles: ['CYCLE EXPLORER', 'Understand every cleaning event'],
-  investigations: ['INVESTIGATIONS', 'Evidence before diagnosis'],
-  optimization: ['CONTROLLED OPTIMIZATION', 'Improve only what the evidence supports'],
-  'data-health': ['DATA HEALTH', 'Trust the evidence first'],
+  overview: ['WORKSPACE / OPERATIONS', 'Plant overview'],
+  cycles: ['WORKSPACE / PROCESS EVIDENCE', 'Cycle explorer'],
+  investigations: ['WORKSPACE / ENGINEERING REVIEW', 'Investigations'],
+  optimization: ['WORKSPACE / CONTROLLED VALIDATION', 'Optimization opportunities'],
+  'data-health': ['WORKSPACE / MEASUREMENT INTEGRITY', 'Data health'],
 };
 
 function esc(v) {
@@ -102,7 +102,7 @@ async function renderOverview(force = false) {
       ${metricCard('Measured water', fmt(d.summary.measured_water_m3,1), 'm³ / 24h', `Dedicated utility meters only`)}
     </div>
 
-    <div class="grid grid-3" style="margin-bottom:14px">
+    <div class="grid grid-3 overview-detail" style="margin-bottom:14px">
       <div class="card card-pad span-2">
         <div class="card-head"><div><div class="card-title">Asset status</div><div class="card-subtitle">Compliance, behavioral intelligence, and evidence confidence by cleaning circuit.</div></div><button class="card-action" data-jump="cycles">Open cycle explorer →</button></div>
         <div class="table-wrap"><table>

@@ -1,0 +1,106 @@
+/* Commercial workspace theme. Data semantics and status colors remain explicit. */
+:root {
+  --bg:#f5f7f8; --ink:#16262d; --muted:#586b75; --muted-2:#73838b;
+  --line:#e1e7ea; --nav:#111c20; --nav-2:#1c2d32;
+  --teal:#087b68; --teal-soft:#e4f4ef; --radius:12px;
+  --shadow:0 2px 5px #18333d03;
+}
+body {font-size:16px; -webkit-font-smoothing:antialiased;}
+button,a,select {touch-action:manipulation;}
+button:focus-visible,select:focus-visible {outline:3px solid #28a58e;outline-offset:4px;}
+.shell {grid-template-columns:260px minmax(0,1fr);}
+.sidebar {width:260px;padding:30px 18px 22px;background:var(--nav);}
+.brand {gap:12px;padding:0 8px 34px;}
+.brand-mark {width:40px;height:40px;border-radius:8px;background:#83e2c0;color:#112e27;font-size:15px;}
+.brand-name {font-size:16px;letter-spacing:-.035em;}
+.brand-sub {font-size:10px;letter-spacing:.16em;margin-top:6px;color:#92a6ae;}
+.site-card {border-radius:8px;padding:16px 14px;margin-bottom:30px;background:#1a282d;border-color:#2b3b42;}
+.site-label,.boundary-kicker {font-size:10px;letter-spacing:.12em;color:#a0b0b7;}
+.site-name {font-size:15px;margin-top:10px;}
+.site-meta {font-size:11px;line-height:1.6;color:#b2c0c6;margin-top:6px;}
+.nav-section-label {font-size:10px;letter-spacing:.15em;color:#82969e;margin:0 12px 12px;font-weight:700;}
+.nav {gap:7px;}
+.nav-item {font-size:13px;padding:13px 12px;min-height:46px;border-radius:7px;color:#aebec5;grid-template-columns:28px 1fr auto;}
+.nav-item.active {background:#254039;box-shadow:inset 3px 0 #82e2bf;color:#e0fff2;}
+.nav-item.active .nav-icon {color:#9ceccf;}
+.nav-count {font-size:11px;background:#35494c;}
+.boundary-title {font-size:14px;margin-top:10px;}
+.boundary-copy,.version {font-size:11px;line-height:1.6;color:#94a8b0;}
+.main {max-width:1920px;padding:36px 38px 64px;}
+.topbar {align-items:center;padding-bottom:28px;margin-bottom:28px;border-bottom:1px solid var(--line);}
+.eyebrow {font-size:10px;color:#667d88;letter-spacing:.13em;margin-bottom:12px;}
+h1 {font-size:34px;font-weight:650;letter-spacing:-.045em;line-height:1.2;}
+.demo-pill {font-size:10px;padding:9px 11px;border-radius:5px;letter-spacing:.08em;background:#fff8e9;border-color:#e8dab6;color:#806126;}
+.icon-button {width:auto;min-width:44px;height:38px;padding:0 13px;border-radius:6px;font-size:15px;}
+.icon-button span {font-size:12px;margin-left:6px;}
+.grid {gap:20px;}
+.card {border-color:#dfe6e9;box-shadow:var(--shadow);}
+.card-pad {padding:24px;}
+.card-head {margin-bottom:22px;gap:20px;}
+.card-title {font-size:16px;font-weight:650;letter-spacing:-.02em;}
+.card-subtitle {font-size:12px;line-height:1.6;max-width:600px;margin-top:7px;}
+.card-action {font-size:12px;line-height:1.6;text-align:right;}
+.metric-card {padding:24px;min-height:156px;border-top:3px solid #d7e5e3;}
+.metric-label {font-size:11px;font-weight:650;letter-spacing:.06em;color:#536c77;}
+.metric-row {margin-top:14px;}
+.metric-value {font-size:42px;line-height:1.15;letter-spacing:-.055em;font-weight:620;font-variant-numeric:tabular-nums;}
+.metric-unit {font-size:13px;}
+.metric-foot {font-size:12px;margin-top:14px;flex-wrap:wrap;line-height:1.5;}
+#view-overview>.grid:first-child {margin-bottom:24px!important;}
+#view-overview>.grid:first-child>.metric-card:first-child {background:#173e36;color:#eafff6;border-color:#173e36;}
+#view-overview>.grid:first-child>.metric-card:first-child .metric-label,
+#view-overview>.grid:first-child>.metric-card:first-child .metric-foot {color:#bcdbd2;}
+#view-overview>.grid:first-child>.metric-card:first-child .trend-good {color:#9cf2c6;}
+.overview-detail {grid-template-columns:minmax(0,1fr)!important;margin-bottom:24px!important;}
+.overview-detail>.span-2 {grid-column:auto;}
+.overview-detail .attention-list {grid-template-columns:repeat(3,minmax(0,1fr));}
+.status-chip {font-size:10px;border-radius:5px;padding:6px 8px;letter-spacing:.015em;max-width:100%;white-space:normal;line-height:1.5;}
+.status-chip:before {flex-shrink:0;}
+th {font-size:10px;font-weight:650;letter-spacing:.075em;background:#f8fafb;padding:12px 14px;color:#5c747f;}
+td {font-size:13px;padding:17px 14px;line-height:1.5;}
+.asset-name {font-size:13px;font-weight:650;}
+.cell-muted {font-size:11px;margin-top:5px;}
+.confidence {font-weight:600;font-variant-numeric:tabular-nums;}
+.attention-item {background:#fafcfc;padding:16px;grid-template-columns:4px 1fr;border-radius:8px;}
+.attention-title,.finding-title {font-size:13px;line-height:1.5;font-weight:650;}
+.attention-copy,.finding-copy {font-size:12px;line-height:1.65;margin-top:7px;}
+.attention-action {grid-column:2;font-size:12px;text-align:left;margin-top:6px;}
+.attention-bar {width:3px;height:28px;}
+.hero-strip {border-radius:10px;margin-bottom:24px;}
+.hero-cell {padding:20px;}
+.hero-kicker,.select-label,.layer-label {font-size:10px;}
+.hero-value {font-size:20px;}
+.hero-note,.layer-detail {font-size:12px;line-height:1.6;}
+.controls-row {gap:12px;margin-bottom:22px;}
+.select-wrap {height:44px;border-radius:7px;max-width:100%;}
+select {font-size:13px;max-width:100%;min-width:0;}
+.primary-btn,.secondary-btn {height:44px;font-size:13px;border-radius:7px;}
+.chart-card {padding:24px;}
+.chart-wrap,.chart-empty {height:300px;}
+.metric-tabs {padding:4px;border-radius:7px;flex-wrap:wrap;}
+.metric-tab {font-size:12px;padding:8px 12px;}
+.phase-band {height:30px;}
+.phase-segment {font-size:10px;}
+.layer-card {padding:16px;border-radius:8px;}
+.layer-value {font-size:14px;line-height:1.5;}
+.finding {padding:17px;border-radius:8px;}
+.finding-class {font-size:10px;}
+.evidence-node {padding:16px;}
+.evidence-node-title {font-size:13px;}
+.evidence-node-copy {font-size:12px;line-height:1.6;}
+.optimization-hero {padding:28px;background:#f0f8f5;border-color:#c8e0d6;}
+.opt-title {font-size:26px;font-weight:650;}
+.opt-copy {font-size:14px;line-height:1.75;}
+.opt-number {padding:20px;}
+.opt-number strong {font-size:30px;font-weight:600;}
+.opt-number span {font-size:12px;line-height:1.5;}
+.boundary-box {font-size:12px;padding:15px 18px;line-height:1.7;}
+.health-stat strong {font-size:16px;}
+.health-stat span,.toast,.error-box {font-size:13px;line-height:1.6;}
+.boundary-panel {padding:20px;border:1px solid #c8e0d6;border-left:3px solid var(--teal);border-radius:8px;background:#f3faf7;}
+.boundary-panel-title {font-size:14px;font-weight:600;line-height:1.6;}
+.boundary-panel-copy {font-size:13px;color:var(--muted);line-height:1.7;margin-top:12px;}
+@media(min-width:1600px){.overview-detail {grid-template-columns:2fr 1fr!important;}.overview-detail .attention-list {grid-template-columns:1fr;}}
+@media(max-width:1200px){.main {padding:28px 24px 48px;}.grid-3 {grid-template-columns:1fr;}.span-2 {grid-column:auto;}.overview-detail .attention-list {grid-template-columns:1fr;}.grid-4 {gap:16px;}.metric-card {padding:20px;}.layer-grid {grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:760px){.shell {display:block;}.sidebar {position:relative;width:100%;padding:20px 16px 12px;}.brand {padding:0 4px 20px;}.nav-section-label {display:none;}.nav {gap:6px;}.nav-item {font-size:12px;min-height:44px;}.main {padding:24px 16px 40px;}.topbar {align-items:flex-start;gap:12px;padding-bottom:22px;margin-bottom:22px;}h1 {font-size:28px;}.eyebrow {font-size:9px;}.topbar-actions {flex-wrap:wrap;justify-content:flex-end;gap:8px;max-width:135px;}.demo-pill {font-size:9px;}.icon-button span {display:none;}.grid-4 {grid-template-columns:repeat(2,minmax(0,1fr));}.metric-card {min-height:145px;padding:17px;}.metric-value {font-size:34px;}.metric-label {font-size:10px;}.metric-foot {font-size:11px;}.card-pad,.chart-card {padding:18px;}.card-head {flex-wrap:wrap;}.card-action {text-align:left;}.chart-toolbar {flex-wrap:wrap;}.hero-strip,.opt-numbers {grid-template-columns:repeat(2,minmax(0,1fr));}.optimization-hero {padding:20px;}.finding {grid-template-columns:1fr;}.finding-meta {text-align:left;}.layer-grid {grid-template-columns:1fr;}th,td {white-space:nowrap;}.table-wrap {max-width:100%;}.status-chip {white-space:normal;}.chart-wrap {height:240px;}.opt-title {font-size:23px;}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after {animation:none!important;transition:none!important;}}
