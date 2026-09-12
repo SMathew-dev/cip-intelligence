@@ -7,8 +7,8 @@ class MappingField(BaseModel):
     source_column: str
     concept: str
     source_unit: str | None = None
-    scale_factor: float = 1.0
-    offset_value: float = 0.0
+    scale_factor: float = Field(default=1.0, allow_inf_nan=False)
+    offset_value: float = Field(default=0.0, allow_inf_nan=False)
 
 
 class MappingProfile(BaseModel):

@@ -180,11 +180,20 @@ def _normalize_scalar(raw: str, concept: str, source_unit: str | None, scale: fl
     except ValueError:
         return None, raw, "NON_NUMERIC_VALUE"
 
+    # NaN bypasses range comparisons; infinities also cannot be serialized as
+    # standard JSON. Keep the source text, but never promote these to evidence.
+    if not math.isfinite(numeric):
+        return None, raw, "NON_FINITE_VALUE"
     numeric = numeric * scale + offset
+    if not math.isfinite(numeric):
+        return None, raw, "NON_FINITE_VALUE"
     try:
         canonical = convert_value(numeric, source_unit, semantic.canonical_unit)
     except ValueError:
         return numeric, None, "UNSUPPORTED_UNIT_CONVERSION"
+
+    if not math.isfinite(canonical):
+        return None, raw, "NON_FINITE_VALUE"
 
     if semantic.plausible_range:
         low, high = semantic.plausible_range
@@ -242,7 +251,7 @@ def normalize_csv(content: bytes, profile: MappingProfile) -> dict:
             if quality:
                 issues.append({
                     "code": quality,
-                    "severity": "HIGH" if quality in {"OUTSIDE_PLAUSIBLE_RANGE", "UNSUPPORTED_UNIT_CONVERSION"} else "MEDIUM",
+                    "severity": "HIGH" if quality in {"OUTSIDE_PLAUSIBLE_RANGE", "UNSUPPORTED_UNIT_CONVERSION", "NON_FINITE_VALUE"} else "MEDIUM",
                     "row": row_number,
                     "column": mapping.source_column,
                     "concept": mapping.concept,
