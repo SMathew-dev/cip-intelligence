@@ -18,7 +18,36 @@ def test_product_ui_is_served():
     assert "Cycle Explorer" in response.text
     assert "Historical Intelligence" in response.text
     assert "No PLC/HMI write path" in response.text
+    assert "Add plant data" in response.text
+    assert "/app/premium.css" in response.text
     assert "/app/historical.js" in response.text
+
+
+def test_data_onboarding_ui_and_inspection_endpoint():
+    script = client.get("/app/app.js")
+    assert script.status_code == 200
+    assert "Inspect an existing plant export" in script.text
+    assert "Review suggested mappings" in script.text
+    assert "Draft plant organization" in script.text
+    response = client.post(
+        "/v1/ingestion/inspect",
+        files={"file": ("plant.csv", b"ts,CIP Return Temp [F],CIP Return Flow [gpm]\n2026-08-25T11:00:00Z,120,100\n", "text/csv")},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["filename"] == "plant.csv"
+    assert payload["timestamp_candidate"]["column"] == "ts"
+    assert payload["columns"][1]["mapping_candidates"][0]["concept"] == "cip.return.temperature"
+    assert payload["organization_proposal"]["mode"] == "unresolved"
+
+
+def test_data_inspection_rejects_oversized_csv():
+    response = client.post(
+        "/v1/ingestion/inspect",
+        files={"file": ("large.csv", b"x" * (25 * 1024 * 1024 + 1), "text/csv")},
+    )
+    assert response.status_code == 413
+    assert response.json()["detail"] == "CSV exceeds the 25 MB inspection limit."
 
 
 def test_historical_ui_assets_are_served():
