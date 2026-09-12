@@ -9,6 +9,11 @@ class MappingField(BaseModel):
     source_unit: str | None = None
     scale_factor: float = Field(default=1.0, allow_inf_nan=False)
     offset_value: float = Field(default=0.0, allow_inf_nan=False)
+    # Wide historian exports often encode equipment identity in the tag name
+    # (for example POL1 Return Flow, POL2 Return Flow). The mapping therefore
+    # needs a reviewed per-signal asset assignment instead of collapsing every
+    # signal into one profile-level default asset.
+    asset_override: str | None = None
 
 
 class MappingProfile(BaseModel):
