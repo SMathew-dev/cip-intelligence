@@ -34,6 +34,8 @@ class IngestionService:
             if semantic is None:
                 errors.append(f"Unknown semantic concept: {mapping.concept!r}")
                 continue
+            if mapping.asset_override is not None and not mapping.asset_override.strip():
+                errors.append(f"{mapping.source_column!r} has a blank asset_override")
             if semantic.canonical_unit is not None and not mapping.source_unit:
                 errors.append(
                     f"{mapping.source_column!r} -> {mapping.concept} requires an explicit source_unit; "
@@ -55,6 +57,56 @@ class IngestionService:
         path = self.mapping_store.save(profile)
         return {"saved": True, "name": profile.name, "path": str(path)}
 
+    def _normalize_with_asset_overrides(self, content: bytes, profile: MappingProfile) -> dict:
+        """Normalize wide historian exports without collapsing circuits together.
+
+        A reviewed ``asset_override`` means the equipment identity came from a tag
+        prefix such as POL1/POL2 rather than from a row-level Circuit column. Each
+        asset is normalized independently and then merged into one lineage result.
+        """
+        overridden = [m for m in profile.mappings if m.asset_override]
+        if not overridden:
+            return normalize_csv(content, profile)
+
+        asset_mapping = next((m for m in profile.mappings if m.concept == "cip.asset"), None)
+        if asset_mapping is not None:
+            raise ValueError("Use either a row-level asset mapping or per-signal asset overrides, not both.")
+
+        unassigned = [m.source_column for m in profile.mappings if not m.asset_override]
+        if unassigned:
+            raise ValueError(
+                "Wide-format equipment mapping requires an approved asset assignment for every mapped signal; "
+                f"missing assignments: {unassigned}"
+            )
+
+        grouped: dict[str, list] = {}
+        for mapping in profile.mappings:
+            asset = str(mapping.asset_override).strip()
+            grouped.setdefault(asset, []).append(mapping.model_copy(update={"asset_override": None}))
+
+        results: list[dict] = []
+        for asset, mappings in sorted(grouped.items()):
+            scoped = profile.model_copy(update={"asset_default": asset, "mappings": mappings})
+            result = normalize_csv(content, scoped)
+            for issue in result.get("issues", []):
+                issue.setdefault("asset", asset)
+            results.append(result)
+
+        rows = results[0]["rows_in_source"] if results else 0
+        records = [record for result in results for record in result["records"]]
+        issues = [issue for result in results for issue in result["issues"]]
+        good = sum(result["good_points"] for result in results)
+        total = sum(result["normalized_points"] for result in results)
+        return {
+            "rows_in_source": rows,
+            "normalized_points": total,
+            "good_points": good,
+            "data_coverage": round(good / total, 4) if total else 0.0,
+            "high_severity_issue_count": sum(1 for issue in issues if issue.get("severity") == "HIGH"),
+            "issues": issues,
+            "records": records,
+        }
+
     def ingest(
         self,
         content: bytes,
@@ -64,7 +116,7 @@ class IngestionService:
         source_identity: str | None = None,
     ) -> dict:
         profile = self.mapping_store.load(profile_name)
-        result = normalize_csv(content, profile)
+        result = self._normalize_with_asset_overrides(content, profile)
         persisted = persist_ingestion(
             content,
             original_filename=filename,
