@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/app/styles.css" />
   <link rel="stylesheet" href="/app/premium.css" />
   <link rel="stylesheet" href="/app/confirm.css" />
+  <link rel="stylesheet" href="/app/research.css" />
   <meta name="theme-color" content="#111c20" />
 </head>
 <body>
@@ -35,6 +36,7 @@
         <button class="nav-item" data-view="investigations"><span class="nav-icon">⌕</span><span>Investigations</span><span class="nav-count">3</span></button>
         <button class="nav-item" data-view="optimization"><span class="nav-icon">↗</span><span>Optimization</span><span class="nav-count">1</span></button>
         <button class="nav-item" data-view="data-health"><span class="nav-icon">◌</span><span>Data Health</span></button>
+        <button class="nav-item" data-view="research"><span class="nav-icon">◎</span><span>Research Validation</span></button>
         <button class="nav-item" data-view="connections"><span class="nav-icon">＋</span><span>Add plant data</span></button>
       </nav>
 
@@ -66,12 +68,14 @@
       <section id="view-investigations" class="view"></section>
       <section id="view-optimization" class="view"></section>
       <section id="view-data-health" class="view"></section>
+      <section id="view-research" class="view"></section>
       <section id="view-connections" class="view"></section>
     </main>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="/app/app.js" defer></script>
+  <script src="/app/research-validation.js" defer></script>
   <script src="/app/discovery-ui.js" defer></script>
   <script src="/app/historical.js" defer></script>
 </body>

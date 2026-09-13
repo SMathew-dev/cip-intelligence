@@ -1,0 +1,99 @@
+{
+  "version": "1.0",
+  "principle": "Published findings are benchmark ground truth. CIP Intelligence results must be compared against them without rewriting or inflating the source claims.",
+  "benchmarks": [
+    {
+      "id": "alvarez-2010-uht",
+      "title": "Industrial UHT heat-exchanger CIP rationalization",
+      "year": 2010,
+      "domain": "Dairy UHT / industrial CIP",
+      "source": "Journal of Dairy Science",
+      "doi": "10.3168/jds.2009-2760",
+      "url": "https://www.journalofdairyscience.org/article/S0022-0302(10)71525-3/fulltext",
+      "benchmark_type": "published-process benchmark",
+      "data_status": "raw time-series not publicly attached",
+      "signals_reported": ["temperature", "conductivity", "turbidity", "pressure decrease", "COD", "calcium"],
+      "sampling": "20 s during production; 5 s during launch and cleaning",
+      "published_findings": [
+        "Sensor and tracer evidence can determine useful end points for CIP phases in real time.",
+        "Wastewater volume could be reduced by about half.",
+        "Caustic and acid use could be reduced by up to a few tens of kilograms per cleaning.",
+        "Total cleaning duration could be reduced substantially by ending phases when evidence showed the endpoint was reached."
+      ],
+      "what_cip_intelligence_should_test": [
+        "reconstruct cleaning phases from timestamped process evidence",
+        "identify stable rinse endpoint from conductivity or turbidity behavior",
+        "quantify avoidable phase duration and resource use",
+        "withhold microbiological-cleanliness claims because process sensors alone do not establish them"
+      ],
+      "status": "benchmark defined",
+      "validation_state": "awaiting raw or reconstructed research fixture"
+    },
+    {
+      "id": "bhagat-2024-sshe",
+      "title": "Three-stage scraped-surface heat-exchanger CIP optimization",
+      "year": 2024,
+      "domain": "Dairy process equipment / experimental CIP",
+      "source": "Indian Journal of Dairy Science",
+      "doi": "10.33785/IJDS.2024.v77i04.005",
+      "url": "https://epubs.icar.org.in/index.php/IJDS/article/view/126635",
+      "benchmark_type": "published-outcome benchmark",
+      "data_status": "paper reports design and optimized conditions; raw run table not yet ingested",
+      "signals_reported": ["solution temperature", "NaOH concentration", "scraper speed", "chemical-rinsing duration", "total CIP time", "total plate count", "coliform count"],
+      "published_findings": [
+        "Optimized solution: about 0.85% NaOH, 72.7 C, and 150 RPM scraper speed.",
+        "Predicted optimized responses were comparable with mean experimental validation values and were not significantly different (p > 0.05)."
+      ],
+      "what_cip_intelligence_should_test": [
+        "separate process-condition optimization from microbiological outcome evidence",
+        "rank operating-condition combinations using duration and sanitation outcomes",
+        "avoid declaring an optimum from process variables when microbial outcome data are absent"
+      ],
+      "status": "benchmark defined",
+      "validation_state": "awaiting tabulated experimental runs"
+    },
+    {
+      "id": "silva-2021-pulsed-flow",
+      "title": "Pulsed-flow CIP sanitization in dairy piping",
+      "year": 2021,
+      "domain": "Dairy pipeline / experimental sanitization",
+      "source": "Journal of Food Process Engineering",
+      "doi": "10.1111/jfpe.13590",
+      "url": "https://doi.org/10.1111/jfpe.13590",
+      "benchmark_type": "published-outcome benchmark",
+      "data_status": "published study available; raw sensor table not located",
+      "signals_reported": ["flow regime", "pulsation parameters", "pipe geometry", "cell removal", "estimated energy consumption"],
+      "published_findings": [
+        "Pulsation variables were significant for cell removal.",
+        "Cell removal differed by geometry, with straight cylinders performing better than elbows in the reported experiment.",
+        "The study evaluated pulsed flow as a way to improve hygiene while reducing energy use."
+      ],
+      "what_cip_intelligence_should_test": [
+        "detect geometry and process context as effect modifiers",
+        "compare stationary and pulsed-flow runs without assuming higher flow is always better",
+        "keep microbial cell-removal evidence distinct from hydraulic process evidence"
+      ],
+      "status": "benchmark defined",
+      "validation_state": "awaiting digitized experimental table"
+    },
+    {
+      "id": "external-mbr-2017",
+      "title": "External membrane-bioreactor process dataset",
+      "year": 2017,
+      "domain": "Membrane bioreactor / external process data",
+      "source": "Zenodo external dataset used for importer stress testing",
+      "url": "https://zenodo.org/records/821585",
+      "benchmark_type": "external-ingestion benchmark",
+      "data_status": "sample CSV tested in live app",
+      "signals_reported": ["timestamp", "temperature", "pH-related tags", "dissolved oxygen", "reactor level", "kPa pressure tags", "process state"],
+      "published_findings": [],
+      "what_cip_intelligence_should_test": [
+        "recognize timestamp from value chronology",
+        "recognize generic measurement families without inventing CIP meaning",
+        "refuse to create a fake CIP cycle when the file is generic process data"
+      ],
+      "status": "live external-data test completed",
+      "validation_state": "ingestion behavior verified; not a dairy-CIP validation benchmark"
+    }
+  ]
+}
