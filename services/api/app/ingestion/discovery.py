@@ -23,6 +23,20 @@ _TIMESTAMP_HEADER_HINTS = {
     "event time", "sample time", "recorded at", "record time", "real time", "ts",
 }
 
+# Units can reveal the measurement family even when historian tags are opaque
+# (for example PS2 (kPa)). They never reveal equipment identity or CIP direction.
+_UNIT_MEASUREMENT_FAMILIES = {
+    "C": ("temperature", "C"),
+    "F": ("temperature", "C"),
+    "L/min": ("flow", "L/min"),
+    "gpm": ("flow", "L/min"),
+    "mS/cm": ("conductivity", "mS/cm"),
+    "uS/cm": ("conductivity", "mS/cm"),
+    "bar": ("pressure", "bar"),
+    "psi": ("pressure", "bar"),
+    "kPa": ("pressure", "bar"),
+}
+
 
 def _parse_datetime_candidate(raw: str) -> datetime | None:
     text = str(raw).strip()
@@ -136,15 +150,91 @@ def discover_timestamp_candidates(headers: list[str], rows: list[dict[str, str]]
     return sorted(candidates, key=lambda c: (-c["confidence"], c["column"]))[:5]
 
 
-def infer_generic_measurement(header: str, *, numeric_fraction: float) -> dict | None:
-    """Identify a measurement family without inventing CIP direction or equipment.
+def is_cip_sequence_header(header: str) -> bool:
+    """Return True only when a phase/state header carries cleaning-specific context.
 
-    A generic ``Temperature (C)`` is useful evidence about the source schema, but it
-    is not automatically a CIP return temperature. The engineer must supply the
-    missing process context before it can become an approved semantic mapping.
+    Generic process fields such as ``Phase of Membrane`` or ``Aerobic phase`` are
+    not CIP steps. This prevents the onboarding layer from silently converting a
+    plant operating state into sanitation evidence.
     """
     norm = normalize_text(header)
     tokens = set(norm.split())
+    cleaning_tokens = {
+        "cip", "clean", "cleaning", "rinse", "caustic", "acid", "sanitize",
+        "sanitizer", "sanitise", "wash",
+    }
+    return bool(tokens & cleaning_tokens)
+
+
+def _ph_like_header(header: str) -> bool:
+    compact = header.strip().lower().replace("_", "").replace("-", "")
+    compact = re.sub(r"\s*\([^)]*\)\s*$", "", compact)
+    # Common plant tags such as pHa / pHan are retained, but words such as
+    # "phase" do not match because the entire header must be one compact token.
+    return bool(re.fullmatch(r"ph[a-z0-9]{0,4}", compact))
+
+
+def infer_generic_measurement(
+    header: str,
+    *,
+    numeric_fraction: float,
+    numeric_min: float | None = None,
+    numeric_max: float | None = None,
+) -> dict | None:
+    """Identify a measurement family without inventing CIP direction or equipment.
+
+    A generic ``Temperature (C)`` is useful evidence about the source schema, but it
+    is not automatically a CIP return temperature. Unit evidence can identify a
+    measurement family even for opaque tags such as ``PS2 (kPa)``. The engineer
+    must still supply the missing process context before analysis.
+    """
+    norm = normalize_text(header)
+    tokens = set(norm.split())
+    source_unit = infer_unit(header)
+
+    # Strong explicit-unit evidence can recover opaque historian tags. This is
+    # intentionally family-level only: kPa means pressure, not return pressure.
+    unit_family = _UNIT_MEASUREMENT_FAMILIES.get(source_unit)
+    if unit_family and numeric_fraction >= 0.8:
+        measurement_type, canonical_unit = unit_family
+        return {
+            "measurement_type": measurement_type,
+            "canonical_unit": canonical_unit,
+            "source_unit_guess": source_unit,
+            "confidence": 0.94,
+            "requires_context": True,
+            "reason": f"Explicit {source_unit} engineering unit identifies the {measurement_type} family; equipment/direction remains unconfirmed",
+        }
+
+    # pH tags are frequently abbreviated (pHa, pHan). Require both a pH-like
+    # compact tag and a plausible 0-14 sample range before proposing the family.
+    if _ph_like_header(header) and numeric_fraction >= 0.8:
+        plausible = (
+            numeric_min is not None and numeric_max is not None
+            and numeric_min >= 0.0 and numeric_max <= 14.0
+        )
+        if plausible:
+            return {
+                "measurement_type": "ph",
+                "canonical_unit": None,
+                "source_unit_guess": None,
+                "confidence": 0.93,
+                "requires_context": True,
+                "reason": "pH-like plant tag with sampled values inside the physical 0-14 pH range; equipment/direction remains unconfirmed",
+            }
+
+    # A generic process phase/state is valuable context, but is not sanitation
+    # evidence unless the header itself contains cleaning-specific language.
+    if ({"phase", "state", "mode", "stage"} & tokens) and not is_cip_sequence_header(header):
+        return {
+            "measurement_type": "process_state",
+            "canonical_unit": None,
+            "source_unit_guess": None,
+            "confidence": 0.90 if numeric_fraction >= 0.8 else 0.86,
+            "requires_context": True,
+            "reason": "Generic operating phase/state detected; not promoted to a CIP cleaning step without cleaning-specific evidence",
+        }
+
     rules = (
         ("temperature", {"temperature", "temp"}, "C"),
         ("flow", {"flow", "flowrate"}, "L/min"),
@@ -157,7 +247,6 @@ def infer_generic_measurement(header: str, *, numeric_fraction: float) -> dict |
     for measurement_type, cues, canonical_unit in rules:
         if not (tokens & cues):
             continue
-        source_unit = infer_unit(header)
         confidence = 0.91
         if source_unit:
             confidence += 0.05

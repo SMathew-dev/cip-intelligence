@@ -4,7 +4,12 @@ from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from app.ingestion.csv_ingest import inspect_csv, normalize_csv, parse_csv_bytes, persist_ingestion
-from app.ingestion.discovery import discover_timestamp_candidates, infer_generic_measurement, profile_values
+from app.ingestion.discovery import (
+    discover_timestamp_candidates,
+    infer_generic_measurement,
+    is_cip_sequence_header,
+    profile_values,
+)
 from app.ingestion.models import MappingProfile
 from app.ingestion.mapping_store import MappingStore
 from app.ingestion.semantic_registry import get_concept
@@ -71,18 +76,33 @@ class IngestionService:
             column["timestamp_confidence"] = next(
                 (c["confidence"] for c in timestamp_candidates if c["column"] == header), 0.0
             )
-            if not column.get("mapping_candidates") and header != result["timestamp_candidate"].get("column"):
+
+            # A bare "phase" or "stage" column describes generic plant state unless
+            # the header itself carries CIP/cleaning context. Never turn production
+            # state into sanitation evidence from a loose word match.
+            mapping_candidates = list(column.get("mapping_candidates") or [])
+            if mapping_candidates and not is_cip_sequence_header(header):
+                demoted = [c for c in mapping_candidates if c.get("concept") == "cip.sequence.phase"]
+                if demoted:
+                    column["demoted_candidates"] = demoted
+                    mapping_candidates = [c for c in mapping_candidates if c.get("concept") != "cip.sequence.phase"]
+                    column["mapping_candidates"] = mapping_candidates
+
+            if not mapping_candidates and header != result["timestamp_candidate"].get("column"):
                 column["measurement_candidate"] = infer_generic_measurement(
                     header,
                     numeric_fraction=value_profile["numeric_fraction"],
+                    numeric_min=value_profile.get("numeric_min"),
+                    numeric_max=value_profile.get("numeric_max"),
                 )
             else:
                 column["measurement_candidate"] = None
 
-        result["inspection_version"] = "1.2-semantic-discovery"
+        result["inspection_version"] = "1.2-semantic-discovery-v2"
         result["discovery_principle"] = (
-            "Value evidence can propose timestamps and measurement families; equipment identity, CIP direction, "
-            "engineering units, and plant semantics still require explicit confirmation before analysis."
+            "Value and unit evidence can propose timestamps and measurement families; equipment identity, CIP direction, "
+            "engineering units, and plant semantics still require explicit confirmation before analysis. Generic plant "
+            "phase/state columns are not CIP sequence evidence unless cleaning context is explicit."
         )
         return result
 
