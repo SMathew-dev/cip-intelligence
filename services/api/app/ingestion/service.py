@@ -3,7 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from app.ingestion.csv_ingest import inspect_csv, normalize_csv, persist_ingestion
+from app.ingestion.csv_ingest import inspect_csv, normalize_csv, parse_csv_bytes, persist_ingestion
+from app.ingestion.discovery import discover_timestamp_candidates, infer_generic_measurement, profile_values
 from app.ingestion.models import MappingProfile
 from app.ingestion.mapping_store import MappingStore
 from app.ingestion.semantic_registry import get_concept
@@ -20,7 +21,70 @@ class IngestionService:
         self.normalized_root.mkdir(parents=True, exist_ok=True)
 
     def inspect(self, content: bytes) -> dict:
-        return inspect_csv(content)
+        """Inspect structure plus conservative value evidence before mapping.
+
+        Header semantics remain the primary source of approved mapping candidates.
+        Value profiling improves discovery of timestamps and generic measurement
+        families, but never invents equipment identity or CIP direction.
+        """
+        result = inspect_csv(content)
+        table = parse_csv_bytes(content, max_rows=250)
+
+        timestamp_candidates = discover_timestamp_candidates(table.headers, table.rows)
+        header_timestamp = result.get("timestamp_candidate") or {}
+        header_column = header_timestamp.get("column")
+        if header_column:
+            existing = next((c for c in timestamp_candidates if c["column"] == header_column), None)
+            header_confidence = float(header_timestamp.get("confidence") or 0.0)
+            if existing:
+                existing["confidence"] = round(max(existing["confidence"], header_confidence), 3)
+                if header_confidence > 0 and "header alias" not in existing["reason"]:
+                    existing["reason"] = (existing["reason"] + "; header alias").strip("; ")
+            elif header_confidence >= 0.55:
+                timestamp_candidates.append({
+                    "column": header_column,
+                    "confidence": round(header_confidence, 3),
+                    "parse_fraction": 0.0,
+                    "monotonic_fraction": 0.0,
+                    "unique_fraction": 0.0,
+                    "reason": "timestamp header alias; values still require review",
+                })
+            timestamp_candidates.sort(key=lambda c: (-c["confidence"], c["column"]))
+
+        if timestamp_candidates:
+            best = timestamp_candidates[0]
+            result["timestamp_candidate"] = {
+                "column": best["column"],
+                "confidence": best["confidence"],
+                "reason": best["reason"],
+                "value_supported": best.get("parse_fraction", 0) >= 0.8,
+            }
+        result["timestamp_candidates"] = timestamp_candidates
+
+        by_name = {column["source_column"]: column for column in result["columns"]}
+        for header in table.headers:
+            column = by_name[header]
+            values = [row.get(header, "") for row in table.rows]
+            value_profile = profile_values(values)
+            column["value_profile"] = value_profile
+            column["numeric_fraction"] = value_profile["numeric_fraction"]
+            column["timestamp_confidence"] = next(
+                (c["confidence"] for c in timestamp_candidates if c["column"] == header), 0.0
+            )
+            if not column.get("mapping_candidates") and header != result["timestamp_candidate"].get("column"):
+                column["measurement_candidate"] = infer_generic_measurement(
+                    header,
+                    numeric_fraction=value_profile["numeric_fraction"],
+                )
+            else:
+                column["measurement_candidate"] = None
+
+        result["inspection_version"] = "1.2-semantic-discovery"
+        result["discovery_principle"] = (
+            "Value evidence can propose timestamps and measurement families; equipment identity, CIP direction, "
+            "engineering units, and plant semantics still require explicit confirmation before analysis."
+        )
+        return result
 
     def validate_mapping(self, profile: MappingProfile) -> list[str]:
         errors: list[str] = []
